@@ -72,6 +72,7 @@ const AnimatedTypography = styled(Typography)({
 
 const MotionBox = motion(Box);
 const MotionTypography = motion(AnimatedTypography);
+const MotionPaper = motion(StyledPaper);
 
 // Default data
 const defaultPatientData: PatientData = {
@@ -116,8 +117,6 @@ const defaultPatientData: PatientData = {
 };
 
 const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistoryProps) => {
-  const [expanded, setExpanded] = useState(false);
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -140,7 +139,7 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
       animate="visible"
     >
       {/* Personal Information */}
-      <StyledPaper component={motion.div} variants={itemVariants}>
+      <MotionPaper variants={itemVariants}>
         <SectionTitle variant="h5">
           <Person color="primary" /> Personal Information
         </SectionTitle>
@@ -187,11 +186,11 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
             <ContactInfoCard contactInfo={patientData.personal_info} />
           </Grid>
         </Grid>
-      </StyledPaper>
+      </MotionPaper>
 
       {/* Medical History */}
       {patientData.medical_history && (
-        <StyledPaper component={motion.div} variants={itemVariants}>
+        <MotionPaper variants={itemVariants}>
           <SectionTitle variant="h5">
             <LocalHospital color="primary" /> Medical History
           </SectionTitle>
@@ -253,11 +252,11 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
               </Table>
             </TableContainer>
           </Box>
-        </StyledPaper>
+        </MotionPaper>
       )}
 
       {/* Current Health Status */}
-      <StyledPaper component={motion.div} variants={itemVariants}>
+      <MotionPaper variants={itemVariants}>
         <SectionTitle variant="h5">
           <Favorite color="primary" /> Current Health Status
         </SectionTitle>
@@ -311,10 +310,10 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
             </Card>
           </Grid>
         </Grid>
-      </StyledPaper>
+      </MotionPaper>
 
       {/* Doctor Notes */}
-      <StyledPaper component={motion.div} variants={itemVariants}>
+      <MotionPaper variants={itemVariants}>
         <SectionTitle variant="h5">
           <Note color="primary" /> Doctor Notes
         </SectionTitle>
@@ -324,7 +323,7 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
         <Typography variant="caption" display="block" mt={2} color="text.secondary">
           Last Visit: {new Date(patientData.date_of_visit).toLocaleString()}
         </Typography>
-      </StyledPaper>
+      </MotionPaper>
     </motion.div>
   );
 };

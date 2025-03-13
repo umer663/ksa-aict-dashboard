@@ -20,6 +20,12 @@ export interface LoginResponse {
   error?: string;
 }
 
+// Form related interfaces
+export interface IFormInputs {
+  email: string;
+  password: string;
+}
+
 // Patient related interfaces
 export interface PersonalInfo {
   first_name: string;
@@ -88,4 +94,32 @@ export interface EditPatientModalProps {
   onClose: () => void;
   patient: PatientData;
   onSave: (patient: PatientData) => Promise<void>;
+}
+
+export interface PrintModalProps {
+  open: boolean;
+  onClose: () => void;
+  patient: PatientData;
+}
+
+export interface PrintablePatientRecordProps {
+  patient: PatientData;
+}
+
+export interface DeleteConfirmationDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  patientName: string;
+  patientId: string;
+}
+
+export interface ContactInfoCardProps {
+  contactInfo: PersonalInfo;
+}
+
+export interface SnackbarState {
+  open: boolean;
+  message: string;
+  severity: 'success' | 'error';
 } 

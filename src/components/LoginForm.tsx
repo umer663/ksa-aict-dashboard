@@ -21,12 +21,6 @@ import {
 import { loginUser } from '../services/authService';
 import { LoginFormProps, IFormInputs } from '../models/types';
 
-// Define the form data structure
-interface IFormInputs {
-  email: string;
-  password: string;
-}
-
 // Define validation schema
 const schema = yup.object().shape({
   email: yup.string().email('Invalid email format').required('Email is required'),
@@ -35,10 +29,6 @@ const schema = yup.object().shape({
     .min(6, 'Password must be at least 6 characters')
     .required('Password is required'),
 });
-
-interface LoginFormProps {
-  onLogin: (email: string) => void;
-}
 
 const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -20,6 +20,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import { PatientData } from '../models/types';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -27,6 +28,8 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: theme.spacing(2),
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
 }));
+
+type FormDataType = Omit<PatientData, 'patient_id'>;
 
 const AddPatientForm = () => {
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ const AddPatientForm = () => {
   const [allergies, setAllergies] = useState<string[]>([]);
   const [newAllergy, setNewAllergy] = useState('');
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataType>({
     personal_info: {
       first_name: '',
       last_name: '',
@@ -53,15 +56,11 @@ const AddPatientForm = () => {
       },
     },
     medical_history: {
-      chronic_diseases: [] as string[],
-      medications: [{ medication_name: '', dosage: '', frequency: '' }],
-      allergies: [] as string[],
-    },
-    current_health_status: {
-      height_cm: '',
-      weight_kg: '',
-      blood_pressure: '',
-      heart_rate: '',
+      chronic_diseases: [],
+      previous_surgeries: [],
+      medications: [],
+      allergies: [],
+      family_medical_history: [],
     },
     lifestyle: {
       smoking: false,
@@ -69,40 +68,59 @@ const AddPatientForm = () => {
       exercise_frequency: '',
       dietary_habits: '',
     },
+    current_health_status: {
+      height_cm: 0,
+      weight_kg: 0,
+      blood_pressure: '',
+      heart_rate: 0,
+      current_symptoms: [],
+    },
+    doctor_notes: '',
+    date_of_visit: new Date().toISOString(),
   });
 
-  const handleInputChange = (section: string, field: string, value: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section as keyof typeof prev],
-        [field]: value,
-      },
-    }));
+  const handleInputChange = (
+    section: keyof FormDataType,
+    field: string,
+    value: any
+  ) => {
+    setFormData((prev: FormDataType) => {
+      // Create a new object for the section
+      const newSection = { ...prev[section] };
+      
+      // Type assertion to allow indexing
+      (newSection as any)[field] = value;
+      
+      return {
+        ...prev,
+        [section]: newSection
+      };
+    });
   };
 
   const handleAddressChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: FormDataType) => ({
       ...prev,
       personal_info: {
         ...prev.personal_info,
         address: {
           ...prev.personal_info.address,
-          [field]: value,
-        },
-      },
+          [field]: value
+        }
+      }
     }));
   };
 
   const handleAddDisease = () => {
     if (newDisease && !diseases.includes(newDisease)) {
-      setDiseases([...diseases, newDisease]);
-      setFormData((prev) => ({
+      const updatedDiseases = [...diseases, newDisease];
+      setDiseases(updatedDiseases);
+      setFormData((prev: FormDataType) => ({
         ...prev,
         medical_history: {
           ...prev.medical_history,
-          chronic_diseases: [...diseases, newDisease],
-        },
+          chronic_diseases: updatedDiseases
+        }
       }));
       setNewDisease('');
     }
@@ -110,37 +128,50 @@ const AddPatientForm = () => {
 
   const handleAddAllergy = () => {
     if (newAllergy && !allergies.includes(newAllergy)) {
-      setAllergies([...allergies, newAllergy]);
-      setFormData((prev) => ({
+      const updatedAllergies = [...allergies, newAllergy];
+      setAllergies(updatedAllergies);
+      setFormData((prev: FormDataType) => ({
         ...prev,
         medical_history: {
           ...prev.medical_history,
-          allergies: [...allergies, newAllergy],
-        },
+          allergies: updatedAllergies
+        }
       }));
       setNewAllergy('');
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Get existing patients from localStorage
-    const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-    
-    // Add new patient with ID and date
-    const newPatient = {
-      ...formData,
-      patient_id: `PAT${Date.now()}`,
-      date_of_visit: new Date().toISOString(),
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('patients', JSON.stringify([...existingPatients, newPatient]));
-    
-    setOpenSnackbar(true);
-    setTimeout(() => {
-      navigate('/patient-history');
-    }, 2000);
+  const handleSubmit = () => {
+    try {
+      // Create new patient by explicitly constructing the object
+      const newPatient: PatientData = {
+        patient_id: `PAT${Date.now()}`,
+        personal_info: formData.personal_info,
+        medical_history: formData.medical_history,
+        lifestyle: formData.lifestyle,
+        current_health_status: formData.current_health_status,
+        doctor_notes: formData.doctor_notes,
+        date_of_visit: formData.date_of_visit,
+      };
+
+      // Get existing patients from localStorage
+      const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
+      
+      // Add new patient
+      const updatedPatients = [...existingPatients, newPatient];
+      
+      // Save to localStorage
+      localStorage.setItem('patients', JSON.stringify(updatedPatients));
+      
+      setOpenSnackbar(true);
+      
+      // Navigate back to patient history after successful save
+      setTimeout(() => {
+        navigate('/patient-history');
+      }, 2000);
+    } catch (error) {
+      console.error('Error saving patient:', error);
+    }
   };
 
   return (

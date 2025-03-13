@@ -27,7 +27,7 @@ import {
   Save as SaveIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { EditPatientModalProps, PatientData } from '../models/types';
+import { EditPatientModalProps, PatientData, Address } from '../models/types';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
@@ -43,16 +43,9 @@ const steps = [
   'Current Health'
 ];
 
-interface EditPatientModalProps {
-  open: boolean;
-  onClose: () => void;
-  patient: any;
-  onSave: (updatedPatient: any) => void;
-}
-
 const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalProps) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState(patient);
+  const [formData, setFormData] = useState<PatientData>(patient);
   const [diseases, setDiseases] = useState<string[]>(patient.medical_history.chronic_diseases || []);
   const [newDisease, setNewDisease] = useState('');
   const [allergies, setAllergies] = useState<string[]>(patient.medical_history.allergies || []);
@@ -65,8 +58,12 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
     setAllergies(patient.medical_history.allergies || []);
   }, [patient]);
 
-  const handleInputChange = (section: string, field: string, value: any) => {
-    setFormData((prev: any) => ({
+  const handleInputChange = (
+    section: 'personal_info' | 'medical_history' | 'lifestyle' | 'current_health_status',
+    field: string,
+    value: any
+  ) => {
+    setFormData((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
@@ -75,8 +72,8 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
     }));
   };
 
-  const handleAddressChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({
+  const handleAddressChange = (field: keyof Address, value: string) => {
+    setFormData((prev) => ({
       ...prev,
       personal_info: {
         ...prev.personal_info,
@@ -92,7 +89,7 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
     if (newDisease && !diseases.includes(newDisease)) {
       const updatedDiseases = [...diseases, newDisease];
       setDiseases(updatedDiseases);
-      setFormData((prev: any) => ({
+      setFormData((prev) => ({
         ...prev,
         medical_history: {
           ...prev.medical_history,
@@ -107,7 +104,7 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
     if (newAllergy && !allergies.includes(newAllergy)) {
       const updatedAllergies = [...allergies, newAllergy];
       setAllergies(updatedAllergies);
-      setFormData((prev: any) => ({
+      setFormData((prev) => ({
         ...prev,
         medical_history: {
           ...prev.medical_history,
@@ -291,7 +288,13 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                     onDelete={() => {
                       const updatedDiseases = diseases.filter((d) => d !== disease);
                       setDiseases(updatedDiseases);
-                      handleInputChange('medical_history', 'chronic_diseases', updatedDiseases);
+                      setFormData((prev) => ({
+                        ...prev,
+                        medical_history: {
+                          ...prev.medical_history,
+                          chronic_diseases: updatedDiseases,
+                        },
+                      }));
                     }}
                     sx={{ m: 0.5 }}
                   />
@@ -322,7 +325,13 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                     onDelete={() => {
                       const updatedAllergies = allergies.filter((a) => a !== allergy);
                       setAllergies(updatedAllergies);
-                      handleInputChange('medical_history', 'allergies', updatedAllergies);
+                      setFormData((prev) => ({
+                        ...prev,
+                        medical_history: {
+                          ...prev.medical_history,
+                          allergies: updatedAllergies,
+                        },
+                      }));
                     }}
                     sx={{ m: 0.5 }}
                   />

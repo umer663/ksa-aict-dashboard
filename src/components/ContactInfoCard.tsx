@@ -13,68 +13,39 @@ import {
   LocationCity,
   Public,
 } from '@mui/icons-material';
+import { ContactInfoCardProps } from '../models/types';
 
-interface ContactInfoProps {
-  contactInfo: {
-    contact_number: string;
-    email: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      postal_code: string;
-      country: string;
-    };
-  };
-}
-
-const ContactInfoCard = ({ contactInfo }: ContactInfoProps) => {
+const ContactInfoCard = ({ contactInfo }: ContactInfoCardProps) => {
   return (
-    <Card elevation={2}>
+    <Card>
       <CardContent>
-        <Typography variant="h6" gutterBottom color="primary">
+        <Typography variant="h6" gutterBottom>
           Contact Information
         </Typography>
-        
         <Stack spacing={2}>
           <Box display="flex" alignItems="center" gap={1}>
             <Phone color="action" />
-            <Typography variant="body1">
-              {contactInfo.contact_number}
-            </Typography>
+            <Typography>{contactInfo.contact_number}</Typography>
           </Box>
-
           <Box display="flex" alignItems="center" gap={1}>
             <Email color="action" />
-            <Typography variant="body1">
-              {contactInfo.email}
-            </Typography>
+            <Typography>{contactInfo.email}</Typography>
           </Box>
-
           <Box>
-            <Typography variant="subtitle2" color="primary" gutterBottom>
-              Address
-            </Typography>
-            <Stack spacing={1}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Home color="action" />
-                <Typography variant="body1">
-                  {contactInfo.address.street}
-                </Typography>
-              </Box>
-              <Box display="flex" alignItems="center" gap={1}>
-                <LocationCity color="action" />
-                <Typography variant="body1">
-                  {contactInfo.address.city}, {contactInfo.address.state} {contactInfo.address.postal_code}
-                </Typography>
-              </Box>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Public color="action" />
-                <Typography variant="body1">
-                  {contactInfo.address.country}
-                </Typography>
-              </Box>
-            </Stack>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Home color="action" />
+              <Typography>{contactInfo.address.street}</Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <LocationCity color="action" />
+              <Typography>
+                {contactInfo.address.city}, {contactInfo.address.state} {contactInfo.address.postal_code}
+              </Typography>
+            </Box>
+            <Box display="flex" alignItems="center" gap={1}>
+              <Public color="action" />
+              <Typography>{contactInfo.address.country}</Typography>
+            </Box>
           </Box>
         </Stack>
       </CardContent>

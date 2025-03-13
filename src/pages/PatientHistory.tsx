@@ -26,15 +26,16 @@ import PatientHistoryForm from '../components/PatientHistoryForm';
 import EditPatientModal from '../components/EditPatientModal';
 import PrintModal from '../components/PrintModal';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { PatientData } from '../models/types';
 
 const PatientHistory = () => {
-  const [patients, setPatients] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [editingPatient, setEditingPatient] = useState(null);
+  const [patients, setPatients] = useState<PatientData[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
+  const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
   const [printModalOpen, setPrintModalOpen] = useState(false);
-  const [printingPatient, setPrintingPatient] = useState(null);
+  const [printingPatient, setPrintingPatient] = useState<PatientData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [patientToDelete, setPatientToDelete] = useState<any>(null);
+  const [patientToDelete, setPatientToDelete] = useState<PatientData | null>(null);
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
@@ -50,8 +51,8 @@ const PatientHistory = () => {
     setPatients(storedPatients);
   }, []);
 
-  const handleSaveEdit = (updatedPatient: any) => {
-    const updatedPatients = patients.map((patient: any) =>
+  const handleSaveEdit = (updatedPatient: PatientData) => {
+    const updatedPatients = patients.map((patient) =>
       patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
     );
     setPatients(updatedPatients);
@@ -63,24 +64,26 @@ const PatientHistory = () => {
     }
   };
 
-  const handlePrint = (patient: any) => {
+  const handlePrint = (patient: PatientData) => {
     setPrintingPatient(patient);
     setPrintModalOpen(true);
   };
 
-  const handleDeleteClick = (patient: any) => {
+  const handleDeleteClick = (patient: PatientData) => {
     setPatientToDelete(patient);
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = () => {
     try {
+      if (!patientToDelete) return;
+
       // Get current patients from localStorage
       const currentPatients = JSON.parse(localStorage.getItem('patients') || '[]');
       
       // Filter out the patient to delete
       const updatedPatients = currentPatients.filter(
-        (p: any) => p.patient_id !== patientToDelete.patient_id
+        (p: PatientData) => p.patient_id !== patientToDelete.patient_id
       );
       
       // Update localStorage
@@ -155,7 +158,7 @@ const PatientHistory = () => {
           sx={{ borderRadius: 2 }}
         >
           <List>
-            {patients.map((patient: any, index: number) => (
+            {patients.map((patient: PatientData, index: number) => (
               <motion.div
                 key={patient.patient_id}
                 layout
