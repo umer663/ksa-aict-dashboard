@@ -85,15 +85,46 @@ const AddPatientForm = () => {
     value: any
   ) => {
     setFormData((prev: FormDataType) => {
-      // Create a new object for the section
-      const newSection = { ...prev[section] };
-      
-      // Type assertion to allow indexing
-      (newSection as any)[field] = value;
-      
+      if (section === 'personal_info') {
+        return {
+          ...prev,
+          personal_info: {
+            ...prev.personal_info,
+            [field]: value
+          }
+        };
+      }
+      if (section === 'medical_history') {
+        return {
+          ...prev,
+          medical_history: {
+            ...prev.medical_history,
+            [field]: value
+          }
+        };
+      }
+      if (section === 'lifestyle') {
+        return {
+          ...prev,
+          lifestyle: {
+            ...prev.lifestyle,
+            [field]: value
+          }
+        };
+      }
+      if (section === 'current_health_status') {
+        return {
+          ...prev,
+          current_health_status: {
+            ...prev.current_health_status,
+            [field]: value
+          }
+        };
+      }
+      // For simple string fields like doctor_notes and date_of_visit
       return {
         ...prev,
-        [section]: newSection
+        [section]: value
       };
     });
   };
@@ -141,13 +172,25 @@ const AddPatientForm = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent default form submission
     try {
-      // Create new patient by explicitly constructing the object
+      // Validate required fields
+      if (!formData.personal_info.first_name || !formData.personal_info.last_name) {
+        throw new Error('Please fill in all required fields');
+      }
+
+      // Create new patient
       const newPatient: PatientData = {
         patient_id: `PAT${Date.now()}`,
-        personal_info: formData.personal_info,
-        medical_history: formData.medical_history,
+        personal_info: {
+          ...formData.personal_info,
+        },
+        medical_history: {
+          ...formData.medical_history,
+          chronic_diseases: diseases,
+          allergies: allergies,
+        },
         lifestyle: formData.lifestyle,
         current_health_status: formData.current_health_status,
         doctor_notes: formData.doctor_notes,
@@ -165,12 +208,13 @@ const AddPatientForm = () => {
       
       setOpenSnackbar(true);
       
-      // Navigate back to patient history after successful save
+      // Navigate after a short delay to ensure data is saved
       setTimeout(() => {
         navigate('/patient-history');
-      }, 2000);
+      }, 1500);
     } catch (error) {
       console.error('Error saving patient:', error);
+      setOpenSnackbar(false);
     }
   };
 
@@ -180,7 +224,11 @@ const AddPatientForm = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Box component="form" onSubmit={handleSubmit}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         {/* Personal Information */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
@@ -447,10 +495,14 @@ const AddPatientForm = () => {
 
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000}
+        autoHideDuration={1500}
         onClose={() => setOpenSnackbar(false)}
       >
-        <Alert severity="success" sx={{ width: '100%' }}>
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
           Patient history saved successfully!
         </Alert>
       </Snackbar>

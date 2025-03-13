@@ -1,4 +1,5 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import React, { useState, useRef, ChangeEvent, MouseEvent } from 'react';
+import type { FormEvent } from 'react';
 import {
   Box,
   Paper,
@@ -42,12 +43,19 @@ const UploadInput = styled('input')({
   display: 'none',
 });
 
-const ImageUploadButton = styled(IconButton)(({ theme }) => ({
+const ImageUploadButton = styled('label')(({ theme }) => ({
   position: 'absolute',
   bottom: 0,
   right: 0,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
   backgroundColor: theme.palette.primary.main,
   color: theme.palette.primary.contrastText,
+  cursor: 'pointer',
   '&:hover': {
     backgroundColor: theme.palette.primary.dark,
   },
@@ -96,7 +104,8 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     setLoading(true);
     try {
       // Simulate API call
@@ -130,10 +139,16 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
     }
   };
 
-  const handleCancel = () => {
+  const handleCancel = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     setIsEditing(false);
     setTempImage(null);
     setFormData(initialData);
+  };
+
+  const handleEditClick = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setIsEditing(true);
   };
 
   return (
@@ -161,13 +176,8 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
                 onChange={handleImageUpload}
                 ref={fileInputRef}
               />
-              <ImageUploadButton
-                aria-label="upload picture"
-                component="label"
-                htmlFor="profile-image-upload"
-                size="small"
-              >
-                <PhotoCamera />
+              <ImageUploadButton htmlFor="profile-image-upload">
+                <PhotoCamera sx={{ fontSize: 20 }} />
               </ImageUploadButton>
             </>
           )}
@@ -184,14 +194,19 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
               </Typography>
               <Button
                 startIcon={<EditIcon />}
-                onClick={() => setIsEditing(true)}
+                onClick={handleEditClick}
                 sx={{ mt: 2 }}
               >
                 Edit Profile
               </Button>
             </>
           ) : (
-            <Box component="form" noValidate>
+            <Box
+              component="form"
+              noValidate
+              onSubmit={(e: React.FormEvent<HTMLFormElement>) => e.preventDefault()}
+              sx={{ width: '100%' }}
+            >
               <TextField
                 fullWidth
                 label="First Name"
@@ -215,7 +230,14 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
                 disabled
                 margin="normal"
               />
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', gap: 2 }}>
+              <Box 
+                sx={{ 
+                  mt: 3, 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  gap: 2 
+                }}
+              >
                 <Button
                   variant="outlined"
                   startIcon={<CancelIcon />}

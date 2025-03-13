@@ -1,31 +1,40 @@
+import React, { useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  IconButton,
+  Box,
 } from '@mui/material';
-import { Close as CloseIcon, Print as PrintIcon } from '@mui/icons-material';
-import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import PrintablePatientRecord from './PrintablePatientRecord';
+import { PatientData } from '../models/types';
 
 interface PrintModalProps {
   open: boolean;
   onClose: () => void;
-  patient: any;
+  patient: PatientData;
 }
 
-const PrintModal = ({ open, onClose, patient }: PrintModalProps) => {
-  const componentRef = useRef(null);
+const PrintModal: React.FC<PrintModalProps> = ({ open, onClose, patient }) => {
+  const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
+    contentRef: componentRef,
     documentTitle: `Patient_Record_${patient.patient_id}`,
-    onAfterPrint: () => {
-      onClose();
-    },
+    onAfterPrint: onClose,
+    pageStyle: `
+      @media print {
+        @page {
+          margin: 20mm;
+        }
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    `
   });
 
   return (
@@ -35,36 +44,23 @@ const PrintModal = ({ open, onClose, patient }: PrintModalProps) => {
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: {
-          height: '90vh',
-        },
+        sx: { minHeight: '60vh' }
       }}
     >
-      <DialogTitle sx={{ m: 0, p: 2 }}>
-        Print Preview
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        <PrintablePatientRecord ref={componentRef} patient={patient} />
+      <DialogTitle>Print Patient Record</DialogTitle>
+      <DialogContent>
+        <Box>
+          <PrintablePatientRecord ref={componentRef} patient={patient} />
+        </Box>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button
-          variant="contained"
-          startIcon={<PrintIcon />}
-          onClick={handlePrint}
+        <Button 
+          onClick={() => handlePrint()}
+          variant="contained" 
+          color="primary"
         >
-          Print Record
+          Print
         </Button>
       </DialogActions>
     </Dialog>

@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -7,6 +8,8 @@ import {
   Typography,
   Box,
   Alert,
+  Paper,
+  PaperProps
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -21,12 +24,24 @@ const StyledWarningIcon = styled(WarningIcon)(({ theme }) => ({
 // Style the Dialog component
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {
-    backgroundColor: theme.palette.background.paper, // Set solid background color
+    backgroundColor: theme.palette.background.paper,
     borderRadius: theme.shape.borderRadius,
     boxShadow: theme.shadows[24],
     padding: theme.spacing(1),
   },
 }));
+
+const MotionDialogPaper = (props: PaperProps) => {
+  return (
+    <Paper
+      component={motion.div}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      {...props}
+    />
+  );
+};
 
 interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -36,37 +51,32 @@ interface DeleteConfirmationDialogProps {
   patientId: string;
 }
 
-const DeleteConfirmationDialog = ({
+const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
   open,
   onClose,
   onConfirm,
   patientName,
   patientId,
-}: DeleteConfirmationDialogProps) => {
+}) => {
   return (
-    <StyledDialog // Use StyledDialog instead of Dialog
+    <StyledDialog
       open={open}
       onClose={onClose}
-      PaperComponent={motion.div}
-      PaperProps={{
-        initial: { opacity: 0, y: 20 },
-        animate: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: 20 },
-      }}
-      maxWidth="sm"
-      fullWidth
+      PaperComponent={MotionDialogPaper}
+      aria-labelledby="delete-dialog-title"
+      aria-describedby="delete-dialog-description"
     >
-      <DialogTitle sx={{ 
+      <DialogTitle id="delete-dialog-title" sx={{ 
         textAlign: 'center', 
         pt: 3,
-        backgroundColor: 'background.paper', // Ensure consistent background
+        backgroundColor: 'background.paper',
       }}>
         <Box display="flex" flexDirection="column" alignItems="center">
           <StyledWarningIcon />
           <Typography variant="h6">Delete Patient Record</Typography>
         </Box>
       </DialogTitle>
-      <DialogContent sx={{ 
+      <DialogContent id="delete-dialog-description" sx={{ 
         backgroundColor: 'background.paper',
         pt: 2,
       }}>
@@ -86,7 +96,7 @@ const DeleteConfirmationDialog = ({
       <DialogActions sx={{ 
         p: 2, 
         justifyContent: 'space-between',
-        backgroundColor: 'background.paper', // Ensure consistent background
+        backgroundColor: 'background.paper',
       }}>
         <Button
           onClick={onClose}

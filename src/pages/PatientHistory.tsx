@@ -51,16 +51,20 @@ const PatientHistory = () => {
     setPatients(storedPatients);
   }, []);
 
-  const handleSaveEdit = (updatedPatient: PatientData) => {
-    const updatedPatients = patients.map((patient) =>
-      patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
-    );
-    setPatients(updatedPatients);
-    localStorage.setItem('patients', JSON.stringify(updatedPatients));
-    
-    // If the patient being viewed is the one being edited, update the view
-    if (selectedPatient?.patient_id === updatedPatient.patient_id) {
-      setSelectedPatient(updatedPatient);
+  const handleSaveEdit = async (updatedPatient: PatientData): Promise<void> => {
+    try {
+      const updatedPatients = patients.map((patient) =>
+        patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
+      );
+      setPatients(updatedPatients);
+      localStorage.setItem('patients', JSON.stringify(updatedPatients));
+      
+      // If the patient being viewed is the one being edited, update the view
+      if (selectedPatient?.patient_id === updatedPatient.patient_id) {
+        setSelectedPatient(updatedPatient);
+      }
+    } catch (error) {
+      throw new Error('Failed to save patient data');
     }
   };
 
