@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "pnpm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umarreactdev/ksa-aict-dashboard.git main:gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
