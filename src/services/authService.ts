@@ -1,11 +1,4 @@
-interface LoginResponse {
-  success: boolean;
-  user?: {
-    email: string;
-    name: string;
-  };
-  error?: string;
-}
+import { LoginResponse } from '../models/types';
 
 // Mock user data - in real app, this would be your backend validation
 const MOCK_VALID_CREDENTIALS = {

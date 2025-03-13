@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AnimatePresence } from 'framer-motion';
 import { createTheme as createThemeMui } from '@mui/material/styles';
+import { User } from '../models/types';
 
 import LoginForm from './components/LoginForm';
 import DashboardLayout from './components/DashboardLayout';
@@ -13,10 +14,6 @@ import Contact from './pages/Contact';
 import PatientHistory from './pages/PatientHistory';
 import AddPatientHistory from './pages/AddPatientHistory';
 import Profile from './pages/Profile';
-
-interface User {
-  email: string;
-}
 
 const theme = createThemeMui({
   palette: {

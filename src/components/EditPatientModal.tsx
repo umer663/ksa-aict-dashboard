@@ -27,6 +27,7 @@ import {
   Save as SaveIcon,
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
+import { EditPatientModalProps, PatientData } from '../models/types';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   '& .MuiDialog-paper': {

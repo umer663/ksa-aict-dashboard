@@ -30,6 +30,7 @@ import {
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 import ContactInfoCard from './ContactInfoCard';
+import { PatientData, PatientHistoryProps } from '../models/types';
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   display: 'flex',
@@ -71,71 +72,6 @@ const AnimatedTypography = styled(Typography)({
 
 const MotionBox = motion(Box);
 const MotionTypography = motion(AnimatedTypography);
-
-// Define proper TypeScript interfaces
-interface Address {
-  street: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-}
-
-interface PersonalInfo {
-  first_name: string;
-  last_name: string;
-  date_of_birth: string;
-  gender: string;
-  contact_number: string;
-  email: string;
-  address: Address;
-}
-
-interface Surgery {
-  surgery_name: string;
-  surgery_date: string;
-}
-
-interface Medication {
-  medication_name: string;
-  dosage: string;
-  frequency: string;
-}
-
-interface MedicalHistory {
-  chronic_diseases: string[];
-  previous_surgeries: Surgery[];
-  medications: Medication[];
-  allergies: string[];
-  family_medical_history: string[];
-}
-
-interface CurrentHealthStatus {
-  height_cm: number;
-  weight_kg: number;
-  blood_pressure: string;
-  heart_rate: number;
-  current_symptoms: string[];
-}
-
-interface PatientData {
-  patient_id: string;
-  personal_info: PersonalInfo;
-  medical_history: MedicalHistory;
-  lifestyle: {
-    smoking: boolean;
-    alcohol_consumption: boolean;
-    exercise_frequency: string;
-    dietary_habits: string;
-  };
-  current_health_status: CurrentHealthStatus;
-  doctor_notes: string;
-  date_of_visit: string;
-}
-
-interface PatientHistoryProps {
-  patientData?: PatientData;
-}
 
 // Default data
 const defaultPatientData: PatientData = {

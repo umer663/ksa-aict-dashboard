@@ -19,6 +19,7 @@ import {
   Lock,
 } from '@mui/icons-material';
 import { loginUser } from '../services/authService';
+import { LoginFormProps, IFormInputs } from '../models/types';
 
 // Define the form data structure
 interface IFormInputs {
