@@ -7,6 +7,8 @@ import {
   ListItemText,
   Box,
   useTheme,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import {
   Home,
@@ -32,6 +34,8 @@ const StyledDrawer = styled(Drawer)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
     borderRight: `1px solid ${theme.palette.divider}`,
     overflowX: 'hidden', // Prevent horizontal scroll
+    display: 'flex',
+    flexDirection: 'column',
   },
 }));
 
@@ -67,11 +71,9 @@ const Sidebar = () => {
 
   return (
     <StyledDrawer variant="permanent">
-      <Box sx={{ 
-        overflow: 'hidden', // Prevent horizontal scroll
-        mt: 8, // Space for navbar
-        height: '100%',
-      }}>
+      <Toolbar />
+      
+      <Box sx={{ overflow: 'auto', flex: 1 }}>
         <List sx={{ 
           px: 1, // Add padding to list
           '& .MuiListItem-root': {
@@ -115,6 +117,26 @@ const Sidebar = () => {
             </ListItem>
           ))}
         </List>
+      </Box>
+
+      <Box
+        sx={{
+          p: 2,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          textAlign: 'center',
+        }}
+      >
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            display: 'block',
+            fontSize: '0.75rem',
+          }}
+        >
+          Version 1.0.0
+        </Typography>
       </Box>
     </StyledDrawer>
   );

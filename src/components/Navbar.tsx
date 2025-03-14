@@ -39,6 +39,15 @@ const theme = createTheme({
       paper: '#ffffff',
     },
   },
+  components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          borderRadius: 0,
+        },
+      },
+    },
+  },
 });
 
 const DRAWER_WIDTH = 280; // Adjust width as needed
@@ -75,7 +84,14 @@ const Navbar = ({ userEmail, onLogout }: NavbarProps) => {
 
   return (
     <>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          borderRadius: 0,
+          boxShadow: '0px 2px 4px -1px rgba(0,0,0,0.1)',
+        }}
+      >
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Logo/Brand */}
