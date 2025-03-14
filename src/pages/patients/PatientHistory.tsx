@@ -22,11 +22,11 @@ import {
   Print as PrintIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import PatientHistoryForm from '../components/PatientHistoryForm';
-import EditPatientModal from '../components/EditPatientModal';
-import PrintModal from '../components/PrintModal';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { PatientData } from '../models/types';
+import PatientHistoryForm from '../../components/PatientHistoryForm';
+import EditPatientModal from '../../components/EditPatientModal';
+import PrintModal from '../../components/PrintModal';
+import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
+import { PatientData } from '../../models/types';
 
 const PatientHistory = () => {
   const [patients, setPatients] = useState<PatientData[]>([]);

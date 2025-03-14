@@ -8,14 +8,14 @@ import LoginForm from './components/LoginForm';
 import DashboardLayout from './components/DashboardLayout';
 
 // Pages
-import Dashboard from './pages/Dashboard';
-import Home from './pages/Home';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import PatientHistory from './pages/PatientHistory';
-import AddPatientHistory from './pages/AddPatientHistory';
-import Profile from './pages/Profile';
-import TopicsPage from './pages/TopicsPage';
+import Dashboard from './pages/dashboard';
+import Home from './pages/home';
+import About from './pages/about';
+import Contact from './pages/contact';
+import PatientHistory from './pages/patients/PatientHistory';
+import AddPatientHistory from './pages/patients/AddPatientHistory';
+import Profile from './pages/profile';
+import Topics from './pages/topics';
 
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -42,7 +42,7 @@ const AppRoutes = () => {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/topics" element={<TopicsPage />} />
+            <Route path="/topics" element={<Topics />} />
             <Route path="/add-patient" element={<AddPatientHistory />} />
             <Route path="/patient-history" element={<PatientHistory />} />
             <Route path="/home" element={<Home />} />

@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import AddPatientForm from '../components/AddPatientForm';
+import AddPatientForm from '../../components/AddPatientForm';
 
 const AddPatientHistory = () => {
   return (

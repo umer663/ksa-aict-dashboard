@@ -1,5 +1,5 @@
 import { Box, Typography } from '@mui/material';
-import UserProfile from '../components/UserProfile';
+import UserProfile from '../../components/UserProfile';
 
 const Profile = () => {
   // This would typically come from your auth context or API

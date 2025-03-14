@@ -1,5 +1,5 @@
 import React from 'react';
-import Topics from '../components/Topics';
+import Topics from './components/Topics';
 import { Box } from '@mui/material';
 
 const TopicsPage = () => {
