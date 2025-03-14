@@ -301,6 +301,41 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                 ))}
               </Box>
             </Grid>
+
+            {/* Medications Input */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Current Medications
+              </Typography>
+              <TextField
+                fullWidth
+                label="Medications"
+                value={formData.medical_history.medications.map(med => 
+                  typeof med === 'string' ? med : med.medication_name
+                ).join(', ')}
+                onChange={(e) => {
+                  const medicationNames = e.target.value.split(',').map(med => med.trim()).filter(med => med);
+                  const medications = medicationNames.map(name => ({
+                    medication_name: name,
+                    dosage: '',
+                    frequency: '',
+                    start_date: new Date().toISOString()
+                  }));
+                  setFormData((prev) => ({
+                    ...prev,
+                    medical_history: {
+                      ...prev.medical_history,
+                      medications,
+                    },
+                  }));
+                }}
+                placeholder="Enter medications separated by commas"
+                multiline
+                rows={2}
+                helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
+              />
+            </Grid>
+            
             <Grid item xs={12}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
@@ -337,6 +372,28 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                   />
                 ))}
               </Box>
+            </Grid>
+
+            {/* Doctor's Notes */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Doctor's Notes
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Medical Notes"
+                value={formData.doctor_notes}
+                onChange={(e) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    doctor_notes: e.target.value,
+                  }));
+                }}
+                placeholder="Enter detailed medical notes, observations, or special instructions"
+                helperText="Include any relevant medical observations, treatment plans, or special instructions"
+              />
             </Grid>
           </Grid>
         );
