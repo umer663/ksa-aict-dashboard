@@ -15,6 +15,7 @@ import {
   Divider,
   Alert,
   Snackbar,
+  FormHelperText,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +23,7 @@ import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { PatientData } from '../models/types';
 
+// Styled component for consistent paper styling throughout the form
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   marginBottom: theme.spacing(3),
@@ -29,7 +31,20 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
 }));
 
+// Type definition for form data excluding patient_id which is generated on submission
 type FormDataType = Omit<PatientData, 'patient_id'>;
+
+// Validation patterns for form fields
+const PATTERNS = {
+  // Allows only letters, spaces, and hyphens for names
+  NAME: /^[A-Za-z\s-]+$/,
+  // Standard email validation pattern
+  EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+  // Validates phone numbers in various formats
+  PHONE: /^(\+\d{1,3}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,
+  // Validates postal/zip codes (supports various formats)
+  POSTAL_CODE: /^[A-Za-z0-9\s-]{3,10}$/,
+};
 
 const AddPatientForm = () => {
   const navigate = useNavigate();
@@ -38,7 +53,14 @@ const AddPatientForm = () => {
   const [newDisease, setNewDisease] = useState('');
   const [allergies, setAllergies] = useState<string[]>([]);
   const [newAllergy, setNewAllergy] = useState('');
+  
+  // State to track validation errors for each field
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // State to track if form has been submitted (for validation display)
+  const [submitted, setSubmitted] = useState(false);
 
+  // Initialize form data with default values
   const [formData, setFormData] = useState<FormDataType>({
     personal_info: {
       first_name: '',
@@ -79,11 +101,94 @@ const AddPatientForm = () => {
     date_of_visit: new Date().toISOString(),
   });
 
+  // Validate a specific field and return error message if invalid
+  const validateField = (field: string, value: any): string => {
+    // Skip validation for empty optional fields
+    if (value === '' && !['first_name', 'last_name', 'date_of_birth', 'gender', 'email'].includes(field)) {
+      return '';
+    }
+
+    switch (field) {
+      case 'first_name':
+      case 'last_name':
+        if (!value) return 'This field is required';
+        if (value.length < 2) return 'Must be at least 2 characters';
+        if (value.length > 50) return 'Must be less than 50 characters';
+        if (!PATTERNS.NAME.test(value)) return 'Only letters, spaces, and hyphens allowed';
+        return '';
+      
+      case 'date_of_birth':
+        if (!value) return 'Date of birth is required';
+        const dob = new Date(value);
+        const today = new Date();
+        if (dob > today) return 'Date cannot be in the future';
+        if (today.getFullYear() - dob.getFullYear() > 120) return 'Age cannot exceed 120 years';
+        return '';
+      
+      case 'gender':
+        if (!value) return 'Gender is required';
+        return '';
+      
+      case 'email':
+        if (!value) return 'Email is required';
+        if (!PATTERNS.EMAIL.test(value)) return 'Invalid email format';
+        return '';
+      
+      case 'contact_number':
+        if (value && !PATTERNS.PHONE.test(value)) return 'Invalid phone number format';
+        return '';
+      
+      case 'street':
+        if (value && value.length < 3) return 'Must be at least 3 characters';
+        return '';
+      
+      case 'city':
+      case 'state':
+      case 'country':
+        if (value && !PATTERNS.NAME.test(value)) return 'Only letters, spaces, and hyphens allowed';
+        return '';
+      
+      case 'postal_code':
+        if (value && !PATTERNS.POSTAL_CODE.test(value)) return 'Invalid postal code format';
+        return '';
+      
+      case 'height_cm':
+        if (value && (isNaN(value) || value <= 0 || value > 300)) return 'Height must be between 1-300 cm';
+        return '';
+      
+      case 'weight_kg':
+        if (value && (isNaN(value) || value <= 0 || value > 500)) return 'Weight must be between 1-500 kg';
+        return '';
+      
+      case 'blood_pressure':
+        if (value && !/^\d{2,3}\/\d{2,3}$/.test(value)) return 'Format should be systolic/diastolic (e.g., 120/80)';
+        return '';
+      
+      case 'heart_rate':
+        if (value && (isNaN(value) || value < 30 || value > 250)) return 'Heart rate must be between 30-250 bpm';
+        return '';
+      
+      default:
+        return '';
+    }
+  };
+
+  // Update form data and validate the field
   const handleInputChange = (
     section: keyof FormDataType,
     field: string,
     value: any
   ) => {
+    // Validate the field
+    const errorMessage = validateField(field, value);
+    
+    // Update errors state
+    setErrors(prev => ({
+      ...prev,
+      [`${section}.${field}`]: errorMessage
+    }));
+    
+    // Update form data based on section
     setFormData((prev: FormDataType) => {
       if (section === 'personal_info') {
         return {
@@ -129,7 +234,18 @@ const AddPatientForm = () => {
     });
   };
 
+  // Handle address field changes and validation
   const handleAddressChange = (field: string, value: string) => {
+    // Validate the address field
+    const errorMessage = validateField(field, value);
+    
+    // Update errors state
+    setErrors(prev => ({
+      ...prev,
+      [`personal_info.address.${field}`]: errorMessage
+    }));
+    
+    // Update form data
     setFormData((prev: FormDataType) => ({
       ...prev,
       personal_info: {
@@ -142,6 +258,7 @@ const AddPatientForm = () => {
     }));
   };
 
+  // Add a new disease to the list
   const handleAddDisease = () => {
     if (newDisease && !diseases.includes(newDisease)) {
       const updatedDiseases = [...diseases, newDisease];
@@ -157,6 +274,7 @@ const AddPatientForm = () => {
     }
   };
 
+  // Add a new allergy to the list
   const handleAddAllergy = () => {
     if (newAllergy && !allergies.includes(newAllergy)) {
       const updatedAllergies = [...allergies, newAllergy];
@@ -172,17 +290,59 @@ const AddPatientForm = () => {
     }
   };
 
+  // Validate all form fields before submission
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    // Validate personal info fields
+    newErrors['personal_info.first_name'] = validateField('first_name', formData.personal_info.first_name);
+    newErrors['personal_info.last_name'] = validateField('last_name', formData.personal_info.last_name);
+    newErrors['personal_info.date_of_birth'] = validateField('date_of_birth', formData.personal_info.date_of_birth);
+    newErrors['personal_info.gender'] = validateField('gender', formData.personal_info.gender);
+    newErrors['personal_info.email'] = validateField('email', formData.personal_info.email);
+    newErrors['personal_info.contact_number'] = validateField('contact_number', formData.personal_info.contact_number);
+    
+    // Validate address fields
+    newErrors['personal_info.address.street'] = validateField('street', formData.personal_info.address.street);
+    newErrors['personal_info.address.city'] = validateField('city', formData.personal_info.address.city);
+    newErrors['personal_info.address.state'] = validateField('state', formData.personal_info.address.state);
+    newErrors['personal_info.address.postal_code'] = validateField('postal_code', formData.personal_info.address.postal_code);
+    newErrors['personal_info.address.country'] = validateField('country', formData.personal_info.address.country);
+    
+    // Validate health status fields
+    newErrors['current_health_status.height_cm'] = validateField('height_cm', formData.current_health_status.height_cm);
+    newErrors['current_health_status.weight_kg'] = validateField('weight_kg', formData.current_health_status.weight_kg);
+    newErrors['current_health_status.blood_pressure'] = validateField('blood_pressure', formData.current_health_status.blood_pressure);
+    newErrors['current_health_status.heart_rate'] = validateField('heart_rate', formData.current_health_status.heart_rate);
+    
+    // Update errors state
+    setErrors(newErrors);
+    
+    // Check if there are any errors
+    return !Object.values(newErrors).some(error => error !== '');
+  };
+
+  // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent default form submission
-    try {
-      // Validate required fields
-      if (!formData.personal_info.first_name || !formData.personal_info.last_name) {
-        throw new Error('Please fill in all required fields');
+    setSubmitted(true); // Mark form as submitted for validation display
+    
+    // Validate all fields
+    const isValid = validateForm();
+    
+    if (!isValid) {
+      // Scroll to the first error
+      const firstErrorField = document.querySelector('.Mui-error');
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-
-      // Create new patient
+      return;
+    }
+    
+    try {
+      // Create new patient with generated ID
       const newPatient: PatientData = {
-        patient_id: `PAT${Date.now()}`,
+        patient_id: `PAT${Date.now()}`, // Generate unique ID based on timestamp
         personal_info: {
           ...formData.personal_info,
         },
@@ -206,6 +366,7 @@ const AddPatientForm = () => {
       // Save to localStorage
       localStorage.setItem('patients', JSON.stringify(updatedPatients));
       
+      // Show success message
       setOpenSnackbar(true);
       
       // Navigate after a short delay to ensure data is saved
@@ -216,6 +377,16 @@ const AddPatientForm = () => {
       console.error('Error saving patient:', error);
       setOpenSnackbar(false);
     }
+  };
+
+  // Helper function to check if a field has an error
+  const hasError = (path: string): boolean => {
+    return submitted && !!errors[path];
+  };
+
+  // Helper function to get error message for a field
+  const getErrorMessage = (path: string): string => {
+    return submitted ? errors[path] || '' : '';
   };
 
   return (
@@ -229,12 +400,13 @@ const AddPatientForm = () => {
         onSubmit={handleSubmit}
         noValidate
       >
-        {/* Personal Information */}
+        {/* Personal Information Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
             Personal Information
           </Typography>
           <Grid container spacing={3}>
+            {/* First Name Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -242,8 +414,12 @@ const AddPatientForm = () => {
                 label="First Name"
                 value={formData.personal_info.first_name}
                 onChange={(e) => handleInputChange('personal_info', 'first_name', e.target.value)}
+                error={hasError('personal_info.first_name')}
+                helperText={getErrorMessage('personal_info.first_name')}
+                inputProps={{ maxLength: 50 }}
               />
             </Grid>
+            {/* Last Name Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -251,8 +427,12 @@ const AddPatientForm = () => {
                 label="Last Name"
                 value={formData.personal_info.last_name}
                 onChange={(e) => handleInputChange('personal_info', 'last_name', e.target.value)}
+                error={hasError('personal_info.last_name')}
+                helperText={getErrorMessage('personal_info.last_name')}
+                inputProps={{ maxLength: 50 }}
               />
             </Grid>
+            {/* Date of Birth Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -262,10 +442,17 @@ const AddPatientForm = () => {
                 InputLabelProps={{ shrink: true }}
                 value={formData.personal_info.date_of_birth}
                 onChange={(e) => handleInputChange('personal_info', 'date_of_birth', e.target.value)}
+                error={hasError('personal_info.date_of_birth')}
+                helperText={getErrorMessage('personal_info.date_of_birth')}
               />
             </Grid>
+            {/* Gender Selection Field */}
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
+              <FormControl 
+                fullWidth 
+                required
+                error={hasError('personal_info.gender')}
+              >
                 <InputLabel>Gender</InputLabel>
                 <Select
                   value={formData.personal_info.gender}
@@ -276,17 +463,21 @@ const AddPatientForm = () => {
                   <MenuItem value="Female">Female</MenuItem>
                   <MenuItem value="Other">Other</MenuItem>
                 </Select>
+                {hasError('personal_info.gender') && (
+                  <FormHelperText>{getErrorMessage('personal_info.gender')}</FormHelperText>
+                )}
               </FormControl>
             </Grid>
           </Grid>
         </StyledPaper>
 
-        {/* Contact Information */}
+        {/* Contact Information Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
             Contact Information
           </Typography>
           <Grid container spacing={3}>
+            {/* Phone Number Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -295,8 +486,11 @@ const AddPatientForm = () => {
                 value={formData.personal_info.contact_number}
                 onChange={(e) => handleInputChange('personal_info', 'contact_number', e.target.value)}
                 placeholder="e.g., +1 234-567-8900"
+                error={hasError('personal_info.contact_number')}
+                helperText={getErrorMessage('personal_info.contact_number')}
               />
             </Grid>
+            {/* Email Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -306,6 +500,8 @@ const AddPatientForm = () => {
                 value={formData.personal_info.email}
                 onChange={(e) => handleInputChange('personal_info', 'email', e.target.value)}
                 placeholder="example@email.com"
+                error={hasError('personal_info.email')}
+                helperText={getErrorMessage('personal_info.email')}
               />
             </Grid>
 
@@ -315,6 +511,7 @@ const AddPatientForm = () => {
               </Typography>
             </Grid>
 
+            {/* Street Address Field */}
             <Grid item xs={12}>
               <TextField
                 required
@@ -323,8 +520,11 @@ const AddPatientForm = () => {
                 value={formData.personal_info.address.street}
                 onChange={(e) => handleAddressChange('street', e.target.value)}
                 placeholder="123 Main Street"
+                error={hasError('personal_info.address.street')}
+                helperText={getErrorMessage('personal_info.address.street')}
               />
             </Grid>
+            {/* City Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -332,8 +532,11 @@ const AddPatientForm = () => {
                 label="City"
                 value={formData.personal_info.address.city}
                 onChange={(e) => handleAddressChange('city', e.target.value)}
+                error={hasError('personal_info.address.city')}
+                helperText={getErrorMessage('personal_info.address.city')}
               />
             </Grid>
+            {/* State/Province Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -341,8 +544,11 @@ const AddPatientForm = () => {
                 label="State/Province"
                 value={formData.personal_info.address.state}
                 onChange={(e) => handleAddressChange('state', e.target.value)}
+                error={hasError('personal_info.address.state')}
+                helperText={getErrorMessage('personal_info.address.state')}
               />
             </Grid>
+            {/* Postal Code Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -350,8 +556,11 @@ const AddPatientForm = () => {
                 label="Postal Code"
                 value={formData.personal_info.address.postal_code}
                 onChange={(e) => handleAddressChange('postal_code', e.target.value)}
+                error={hasError('personal_info.address.postal_code')}
+                helperText={getErrorMessage('personal_info.address.postal_code')}
               />
             </Grid>
+            {/* Country Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -359,17 +568,20 @@ const AddPatientForm = () => {
                 label="Country"
                 value={formData.personal_info.address.country}
                 onChange={(e) => handleAddressChange('country', e.target.value)}
+                error={hasError('personal_info.address.country')}
+                helperText={getErrorMessage('personal_info.address.country')}
               />
             </Grid>
           </Grid>
         </StyledPaper>
 
-        {/* Medical History */}
+        {/* Medical History Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
             Medical History
           </Typography>
           <Grid container spacing={3}>
+            {/* Chronic Diseases Input */}
             <Grid item xs={12}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
@@ -382,6 +594,7 @@ const AddPatientForm = () => {
                   variant="contained"
                   onClick={handleAddDisease}
                   startIcon={<AddIcon />}
+                  disabled={!newDisease}
                 >
                   Add
                 </Button>
@@ -400,6 +613,26 @@ const AddPatientForm = () => {
               </Box>
             </Grid>
             
+            {/* Medications Input */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Current Medications
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  fullWidth
+                  label="Add Medication"
+                  value={formData.medical_history.medications.join(', ')}
+                  onChange={(e) => handleInputChange('medical_history', 'medications', e.target.value.split(',').map(item => item.trim()))}
+                  placeholder="Enter medications separated by commas"
+                  multiline
+                  rows={2}
+                  helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
+                />
+              </Stack>
+            </Grid>
+            
+            {/* Allergies Input */}
             <Grid item xs={12}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <TextField
@@ -412,6 +645,7 @@ const AddPatientForm = () => {
                   variant="contained"
                   onClick={handleAddAllergy}
                   startIcon={<AddIcon />}
+                  disabled={!newAllergy}
                 >
                   Add
                 </Button>
@@ -429,35 +663,61 @@ const AddPatientForm = () => {
                 ))}
               </Box>
             </Grid>
+
+            {/* Doctor's Notes */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Doctor's Notes
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Medical Notes"
+                value={formData.doctor_notes}
+                onChange={(e) => handleInputChange('doctor_notes', '', e.target.value)}
+                placeholder="Enter detailed medical notes, observations, or special instructions"
+                helperText="Include any relevant medical observations, treatment plans, or special instructions"
+              />
+            </Grid>
           </Grid>
         </StyledPaper>
 
-        {/* Current Health Status */}
+        {/* Current Health Status Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
             Current Health Status
           </Typography>
           <Grid container spacing={3}>
+            {/* Height Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
                 fullWidth
                 type="number"
                 label="Height (cm)"
-                value={formData.current_health_status.height_cm}
-                onChange={(e) => handleInputChange('current_health_status', 'height_cm', e.target.value)}
+                value={formData.current_health_status.height_cm || ''}
+                onChange={(e) => handleInputChange('current_health_status', 'height_cm', Number(e.target.value))}
+                error={hasError('current_health_status.height_cm')}
+                helperText={getErrorMessage('current_health_status.height_cm')}
+                inputProps={{ min: 1, max: 300 }}
               />
             </Grid>
+            {/* Weight Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
                 fullWidth
                 type="number"
                 label="Weight (kg)"
-                value={formData.current_health_status.weight_kg}
-                onChange={(e) => handleInputChange('current_health_status', 'weight_kg', e.target.value)}
+                value={formData.current_health_status.weight_kg || ''}
+                onChange={(e) => handleInputChange('current_health_status', 'weight_kg', Number(e.target.value))}
+                error={hasError('current_health_status.weight_kg')}
+                helperText={getErrorMessage('current_health_status.weight_kg')}
+                inputProps={{ min: 1, max: 500 }}
               />
             </Grid>
+            {/* Blood Pressure Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
@@ -466,21 +726,28 @@ const AddPatientForm = () => {
                 placeholder="120/80"
                 value={formData.current_health_status.blood_pressure}
                 onChange={(e) => handleInputChange('current_health_status', 'blood_pressure', e.target.value)}
+                error={hasError('current_health_status.blood_pressure')}
+                helperText={getErrorMessage('current_health_status.blood_pressure') || 'Format: systolic/diastolic (e.g., 120/80)'}
               />
             </Grid>
+            {/* Heart Rate Field */}
             <Grid item xs={12} sm={6}>
               <TextField
                 required
                 fullWidth
                 type="number"
                 label="Heart Rate (bpm)"
-                value={formData.current_health_status.heart_rate}
-                onChange={(e) => handleInputChange('current_health_status', 'heart_rate', e.target.value)}
+                value={formData.current_health_status.heart_rate || ''}
+                onChange={(e) => handleInputChange('current_health_status', 'heart_rate', Number(e.target.value))}
+                error={hasError('current_health_status.heart_rate')}
+                helperText={getErrorMessage('current_health_status.heart_rate')}
+                inputProps={{ min: 30, max: 250 }}
               />
             </Grid>
           </Grid>
         </StyledPaper>
 
+        {/* Form Submission Button */}
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
           <Button
             type="submit"
@@ -493,6 +760,7 @@ const AddPatientForm = () => {
         </Box>
       </Box>
 
+      {/* Success Notification */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={1500}
