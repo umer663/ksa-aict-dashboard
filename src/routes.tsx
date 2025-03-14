@@ -15,6 +15,7 @@ import Contact from './pages/Contact';
 import PatientHistory from './pages/PatientHistory';
 import AddPatientHistory from './pages/AddPatientHistory';
 import Profile from './pages/Profile';
+import TopicsPage from './pages/TopicsPage';
 
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -41,6 +42,7 @@ const AppRoutes = () => {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/topics" element={<TopicsPage />} />
             <Route path="/add-patient" element={<AddPatientHistory />} />
             <Route path="/patient-history" element={<PatientHistory />} />
             <Route path="/home" element={<Home />} />

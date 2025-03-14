@@ -18,6 +18,7 @@ import {
   PersonAdd,
   MedicalInformation,
   AccountCircle,
+  MenuBook,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -56,6 +57,7 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+  { text: 'Topics', icon: <MenuBook />, path: '/topics' },
   { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
   { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
   { text: 'Home', icon: <Home />, path: '/home' },
