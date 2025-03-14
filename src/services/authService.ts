@@ -3,7 +3,7 @@ import { LoginResponse } from '../models/types';
 // Mock user data - in real app, this would be your backend validation
 const MOCK_VALID_CREDENTIALS = {
   email: 'test@example.com',
-  password: 'password123'
+  password: '123@Office'
 };
 
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
