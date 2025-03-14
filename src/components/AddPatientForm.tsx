@@ -53,7 +53,7 @@ const AddPatientForm = () => {
   const [newDisease, setNewDisease] = useState('');
   const [allergies, setAllergies] = useState<string[]>([]);
   const [newAllergy, setNewAllergy] = useState('');
-  
+
   // State to track validation errors for each field
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -357,21 +357,21 @@ const AddPatientForm = () => {
         date_of_visit: formData.date_of_visit,
       };
 
-      // Get existing patients from localStorage
-      const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-      
+    // Get existing patients from localStorage
+    const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
+    
       // Add new patient
       const updatedPatients = [...existingPatients, newPatient];
-      
-      // Save to localStorage
+    
+    // Save to localStorage
       localStorage.setItem('patients', JSON.stringify(updatedPatients));
-      
+    
       // Show success message
-      setOpenSnackbar(true);
+    setOpenSnackbar(true);
       
       // Navigate after a short delay to ensure data is saved
-      setTimeout(() => {
-        navigate('/patient-history');
+    setTimeout(() => {
+      navigate('/patient-history');
       }, 1500);
     } catch (error) {
       console.error('Error saving patient:', error);

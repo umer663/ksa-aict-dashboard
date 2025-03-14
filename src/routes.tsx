@@ -16,6 +16,7 @@ import PatientHistory from './pages/patients/PatientHistory';
 import AddPatientHistory from './pages/patients/AddPatientHistory';
 import Profile from './pages/profile';
 import Topics from './pages/topics';
+import Introduction from './pages/introduction';
 
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -54,6 +55,7 @@ const AppRoutes = () => {
         ) : (
           <>
             <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/introduction" element={<Introduction />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </>
         )}

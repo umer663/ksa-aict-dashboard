@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -130,6 +131,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutEndTime, setLockoutEndTime] = useState<Date | null>(null);
+  const navigate = useNavigate();
 
   // Initialize form with validation and real-time feedback
   const {
@@ -224,43 +226,85 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        bgcolor: theme.palette.background.default,
-        p: 2,
+        minHeight: '100vh',
+        bgcolor: 'background.default',
       }}
     >
+      {/* Left Section */}
       <Box
         sx={{
-          width: '100%',
-          maxWidth: '450px',
-          bgcolor: theme.palette.background.paper,
-          borderRadius: 3,
+          flex: 1,
+          bgcolor: 'primary.main',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
           p: 4,
-          boxShadow: '0px 4px 30px rgba(0, 0, 0, 0.08)',
+          position: 'relative',
         }}
       >
+        <Box
+          component="img"
+          src="/icons/document-icon.svg"
+          alt="Document Icon"
+          sx={{
+            width: 80,
+            height: 80,
+            mb: 3,
+            filter: 'brightness(0) invert(1)',
+          }}
+        />
+        <Typography variant="h4" component="h1" gutterBottom>
+          Welcome
+        </Typography>
         <Typography 
-          component="h1" 
-          variant="h4" 
-          sx={{ 
+          variant="h5" 
+          align="center"
+          sx={{
+            mb: 2,
+            fontWeight: 500,
+            cursor: 'pointer',
+            textDecoration: 'underline',
+            '&:hover': {
+              opacity: 0.8,
+            },
+          }}
+          onClick={() => navigate('/introduction')}
+        >
+          Khuwaja Shamsu Deen Azeemi
+        </Typography>
+      </Box>
+
+      {/* Right Section */}
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 4,
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            color: 'primary.main',
             mb: 4,
             textAlign: 'center',
-            color: '#2196F3',
-            fontWeight: 500,
           }}
         >
-          Sign In
+          Login to the system
         </Typography>
 
-        {/* Error message display */}
         {error && (
           <Alert 
             severity="error" 
             sx={{ 
               width: '100%', 
+              maxWidth: '400px',
               mb: 2,
               '& .MuiAlert-message': { width: '100%' }
             }}
@@ -269,14 +313,15 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </Alert>
         )}
 
-        {/* Login form */}
         <Box
           component="form"
           onSubmit={handleSubmit(onSubmit)}
-          sx={{ width: '100%' }}
+          sx={{
+            width: '100%',
+            maxWidth: '400px',
+          }}
           noValidate
         >
-          {/* Email field */}
           <TextField
             margin="normal"
             required
@@ -299,7 +344,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             sx={{ mb: 2 }}
           />
 
-          {/* Password field */}
           <TextField
             margin="normal"
             required
@@ -332,10 +376,24 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 </InputAdornment>
               ),
             }}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
           />
 
-          {/* Submit button */}
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'primary.main',
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              Forgot password?
+            </Typography>
+          </Box>
+
           <Button
             type="submit"
             fullWidth
@@ -344,9 +402,9 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             sx={{ 
               py: 1.5,
               mb: 3,
-              bgcolor: '#2196F3',
+              bgcolor: 'primary.main',
               '&:hover': {
-                bgcolor: '#1976D2',
+                bgcolor: 'primary.dark',
               },
               borderRadius: 1,
               position: 'relative',
@@ -365,11 +423,10 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
                 Signing in...
               </>
             ) : (
-              'Sign In'
+              'Login'
             )}
           </Button>
 
-          {/* Demo credentials */}
           <Typography 
             variant="body2" 
             sx={{ 
