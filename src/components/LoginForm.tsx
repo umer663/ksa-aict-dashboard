@@ -22,6 +22,7 @@ import {
 } from '@mui/icons-material';
 import { loginUser } from '../services/authService';
 import { LoginFormProps, IFormInputs } from '../models/types';
+import ksa from '../assets/khuwaja-shamsu-deen-azeemi.jpg';
 
 // Maximum failed login attempts before temporary lockout
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -247,18 +248,22 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
       >
         <Box
           component="img"
-          src="/icons/document-icon.svg"
-          alt="Document Icon"
+          src={ksa}
+          alt="Khuwaja Shamsu Deen Azeemi"
           sx={{
-            width: 80,
-            height: 80,
+            width: 250,
+            height: 320,
             mb: 3,
-            filter: 'brightness(0) invert(1)',
+            borderRadius: '10%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            border: '4px solid white',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
           }}
         />
-        <Typography variant="h4" component="h1" gutterBottom>
+        {/* <Typography variant="h4" component="h1" gutterBottom>
           Welcome
-        </Typography>
+        </Typography> */}
         <Typography 
           variant="h5" 
           align="center"
