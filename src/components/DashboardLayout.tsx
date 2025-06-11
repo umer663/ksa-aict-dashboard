@@ -3,25 +3,26 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import { Outlet } from 'react-router-dom';
+import { User } from '../models/types';
 
 // Constants for layout measurements
 const NAVBAR_HEIGHT = 64; // Standard MUI AppBar height
 const FOOTER_HEIGHT = 40; // Match footer height
 
 interface DashboardLayoutProps {
-  userEmail: string;
+  user: User;
   onLogout: () => void;
 }
 
-const DashboardLayout = ({ userEmail, onLogout }: DashboardLayoutProps) => {
+const DashboardLayout = ({ user, onLogout }: DashboardLayoutProps) => {
   return (
     <Box sx={{ 
       display: 'flex',
       minHeight: '100vh',
       backgroundColor: 'background.default', // Match your theme background
     }}>
-      <Navbar userEmail={userEmail} onLogout={onLogout} />
-      <Sidebar />
+      <Navbar user={user} onLogout={onLogout} />
+      <Sidebar user={user} />
       <Box
         component="main"
         sx={{
@@ -41,7 +42,7 @@ const DashboardLayout = ({ userEmail, onLogout }: DashboardLayoutProps) => {
           maxWidth: '100%',
           pb: 4, // Add padding to prevent content from being hidden behind footer
         }}>
-          <Outlet />
+          <Outlet context={{ user }} />
         </Box>
         <Footer />
       </Box>

@@ -20,9 +20,10 @@ import {
 import { removeAuthToken } from '../services/authService';
 import { createTheme } from '@mui/material/styles';
 import ProfileModal from './ProfileModal';
+import { User } from '../models/types';
 
 interface NavbarProps {
-  userEmail: string;
+  user: User;
   onLogout: () => void;
 }
 
@@ -52,16 +53,17 @@ const theme = createTheme({
 
 const DRAWER_WIDTH = 280; // Adjust width as needed
 
-const Navbar = ({ userEmail, onLogout }: NavbarProps) => {
+const Navbar = ({ user, onLogout }: NavbarProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
-  // Mock user data - In a real app, this would come from your auth context or API
+  // Use user object for display
   const userData = {
-    firstName: userEmail.split('@')[0], // Simple example - replace with real data
+    firstName: user.name || user.email.split('@')[0],
     lastName: '',
-    email: userEmail,
-    profileImage: '', // Add default image URL if needed
+    email: user.email,
+    profileImage: '',
+    role: user.role,
   };
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -111,42 +113,45 @@ const Navbar = ({ userEmail, onLogout }: NavbarProps) => {
             </Typography>
 
             {/* Profile Section */}
-            <Box sx={{ flexGrow: 0 }}>
+            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, mr: 1 }}>
+                {user.email}
+              </Typography>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
                   <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                    {userEmail.charAt(0).toUpperCase()}
+                    {user.email.charAt(0).toUpperCase()}
                   </Avatar>
                 </IconButton>
               </Tooltip>
-              <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleCloseMenu}
-              >
-                <MenuItem onClick={handleOpenProfile}>
-                  <AccountCircle sx={{ mr: 1.5 }} /> Profile
-                </MenuItem>
-                <MenuItem onClick={handleCloseMenu}>
-                  <Settings sx={{ mr: 1.5 }} /> Settings
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleLogout}>
-                  <Logout sx={{ mr: 1.5 }} /> Logout
-                </MenuItem>
-              </Menu>
             </Box>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleCloseMenu}
+            >
+              {/* <MenuItem onClick={handleOpenProfile}>
+                <AccountCircle sx={{ mr: 1.5 }} /> Profile
+              </MenuItem> */}
+              {/* <MenuItem onClick={handleCloseMenu}>
+                <Settings sx={{ mr: 1.5 }} /> Settings
+              </MenuItem> */}
+              <Divider />
+              <MenuItem onClick={handleLogout}>
+                <Logout sx={{ mr: 1.5 }} /> Logout
+              </MenuItem>
+            </Menu>
           </Toolbar>
         </Container>
       </AppBar>

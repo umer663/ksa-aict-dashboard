@@ -19,10 +19,13 @@ import {
   MedicalInformation,
   AccountCircle,
   MenuBook,
+  BugReport,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
+import { User } from '../models/types';
+import { rolePermissions as defaultRolePermissions, allPages } from '../pages/user-management/user-management';
 
 const DRAWER_WIDTH = 240;
 
@@ -57,19 +60,33 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Topics', icon: <MenuBook />, path: '/topics' },
-  { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
-  { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
   { text: 'Home', icon: <Home />, path: '/home' },
   { text: 'About', icon: <Info />, path: '/about' },
-  { text: 'Contact', icon: <ContactMail />, path: '/contact' },
+  { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
+  { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
+  { text: 'Topics', icon: <MenuBook />, path: '/topics' },
+  { text: 'Bug / Feature', icon: <BugReport />, path: '/bug-feature' },
   { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
+  { text: 'Contact', icon: <ContactMail />, path: '/contact' },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  user: User;
+}
+
+const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
+
+const Sidebar = ({ user }: SidebarProps) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const userPerms = getUserPermissions(user);
+  const filteredMenuItems = menuItems.filter(item => userPerms.includes(item.path.replace('/', '')));
+  // Add User Management menu item for SuperAdmin if allowed
+  if (userPerms.includes('user-management') && user.role === 'SuperAdmin') {
+    filteredMenuItems.push({ text: 'User Management', icon: <AccountCircle />, path: '/user-management' });
+  }
 
   return (
     <StyledDrawer variant="permanent">
@@ -84,7 +101,7 @@ const Sidebar = () => {
             px: 0, // Remove default padding
           },
         }}>
-          {menuItems.map((item) => (
+          {filteredMenuItems.map((item) => (
             <ListItem key={item.text} disablePadding>
               <motion.div
                 style={{ width: '100%' }}

@@ -17,13 +17,18 @@ import AddPatientHistory from './pages/patients/AddPatientHistory';
 import Profile from './pages/profile';
 import Topics from './pages/topics';
 import Introduction from './pages/introduction';
+import UserManagement from './pages/user-management';
+import { rolePermissions as defaultRolePermissions, allPages } from './pages/user-management/user-management';
+import BugFeature from './pages/bug-feature';
+
+const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
 
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
 
-  const handleLogin = (email: string) => {
-    setUser({ email });
+  const handleLogin = (user: User) => {
+    setUser(user);
   };
 
   const handleLogout = () => {
@@ -37,20 +42,24 @@ const AppRoutes = () => {
           <Route
             element={
               <DashboardLayout
-                userEmail={user.email}
+                user={user}
                 onLogout={handleLogout}
               />
             }
           >
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/topics" element={<Topics />} />
-            <Route path="/add-patient" element={<AddPatientHistory />} />
-            <Route path="/patient-history" element={<PatientHistory />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {getUserPermissions(user).includes('dashboard') && <Route path="/dashboard" element={<Dashboard />} />}
+            {getUserPermissions(user).includes('topics') && <Route path="/topics" element={<Topics />} />}
+            {getUserPermissions(user).includes('add-patient') && <Route path="/add-patient" element={<AddPatientHistory />} />}
+            {getUserPermissions(user).includes('patient-history') && <Route path="/patient-history" element={<PatientHistory />} />}
+            {getUserPermissions(user).includes('home') && <Route path="/home" element={<Home />} />}
+            {getUserPermissions(user).includes('about') && <Route path="/about" element={<About />} />}
+            {getUserPermissions(user).includes('contact') && <Route path="/contact" element={<Contact />} />}
+            {getUserPermissions(user).includes('profile') && <Route path="/profile" element={<Profile />} />}
+            {getUserPermissions(user).includes('user-management') && user.role === 'SuperAdmin' && (
+              <Route path="/user-management" element={<UserManagement />} />
+            )}
+            {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature />} />}
+            <Route path="*" element={<Navigate to={`/${getUserPermissions(user)[0]}`} replace />} />
           </Route>
         ) : (
           <>

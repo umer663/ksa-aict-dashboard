@@ -1,4 +1,4 @@
-// Address related interfaces
+  // Address related interfaces
 export interface Address {
   street: string;
   city: string;
@@ -8,9 +8,15 @@ export interface Address {
 }
 
 // User related interfaces
+export type UserRole = 'SuperAdmin' | 'Admin' | 'Therapist' | 'Receptionist';
+
 export interface User {
   email: string;
   name?: string;
+  role: UserRole;
+  blocked?: boolean;
+  profileImage?: string;
+  permissions?: string[]; // List of allowed page keys
 }
 
 // Auth related interfaces
@@ -82,7 +88,7 @@ export interface PatientData {
 
 // Component Props interfaces
 export interface LoginFormProps {
-  onLogin: (email: string) => void;
+  onLogin: (user: User) => void;
 }
 
 export interface PatientHistoryProps {

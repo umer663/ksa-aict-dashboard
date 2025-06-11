@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
           fontWeight: 400
         }}
       >
-        © {currentYear} AICT Dashboard. All rights reserved.
+        © {currentYear} Made with ❤️ by Team AICT. All rights reserved.
       </Typography>
     </FooterContainer>
   );

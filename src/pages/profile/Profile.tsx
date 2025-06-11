@@ -1,13 +1,17 @@
 import { Box, Typography } from '@mui/material';
 import UserProfile from '../../components/UserProfile';
+import { useOutletContext } from 'react-router-dom';
+import { User } from '../../models/types';
 
 const Profile = () => {
-  // This would typically come from your auth context or API
+  // Get the logged-in user from the outlet context (provided by DashboardLayout)
+  const { user } = useOutletContext<{ user: User }>();
+
   const userData = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    profileImage: '', // Add default image URL if needed
+    firstName: user.name || user.email.split('@')[0],
+    lastName: '',
+    email: user.email,
+    profileImage: user.profileImage || '',
   };
 
   return (
