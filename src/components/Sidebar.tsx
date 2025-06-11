@@ -66,6 +66,7 @@ const menuItems = [
   { text: 'Bug / Feature', icon: <BugReport />, path: '/bug-feature' },
   { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
   { text: 'Contact', icon: <ContactMail />, path: '/contact' },
+  { text: 'Tutorials', icon: <MenuBook />, path: '/tutorials' },
 ];
 
 interface SidebarProps {
@@ -159,4 +160,4 @@ const Sidebar = ({ user }: SidebarProps) => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;
