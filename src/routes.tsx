@@ -9,7 +9,6 @@ import DashboardLayout from './components/DashboardLayout';
 
 // Pages
 import Dashboard from './pages/dashboard';
-import Home from './pages/home';
 import About from './pages/about';
 import Contact from './pages/contact';
 import PatientHistory from './pages/patients/PatientHistory';
@@ -51,7 +50,6 @@ const AppRoutes = () => {
             {getUserPermissions(user).includes('topics') && <Route path="/topics" element={<Topics />} />}
             {getUserPermissions(user).includes('add-patient') && <Route path="/add-patient" element={<AddPatientHistory />} />}
             {getUserPermissions(user).includes('patient-history') && <Route path="/patient-history" element={<PatientHistory />} />}
-            {getUserPermissions(user).includes('home') && <Route path="/home" element={<Home />} />}
             {getUserPermissions(user).includes('about') && <Route path="/about" element={<About />} />}
             {getUserPermissions(user).includes('contact') && <Route path="/contact" element={<Contact />} />}
             {getUserPermissions(user).includes('profile') && <Route path="/profile" element={<Profile />} />}

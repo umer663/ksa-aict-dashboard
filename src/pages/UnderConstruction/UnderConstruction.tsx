@@ -11,9 +11,9 @@ const UnderConstruction = () => {
       <Typography variant="body1" sx={{ mb: 3 }}>
         This feature is currently under development. Please check back later.
       </Typography>
-      <Button variant="contained" color="primary" onClick={() => navigate('/dashboard')}>
+      {/* <Button variant="contained" color="primary" onClick={() => navigate('/dashboard')}>
         Go to Dashboard
-      </Button>
+      </Button> */}
     </Box>
   );
 };

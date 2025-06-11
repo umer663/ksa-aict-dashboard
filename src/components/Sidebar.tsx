@@ -11,7 +11,6 @@ import {
   Typography,
 } from '@mui/material';
 import {
-  Home,
   Info,
   ContactMail,
   Dashboard as DashboardIcon,
@@ -60,7 +59,6 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
 
 const menuItems = [
   { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Home', icon: <Home />, path: '/home' },
   { text: 'About', icon: <Info />, path: '/about' },
   { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
   { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
