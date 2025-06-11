@@ -21,6 +21,7 @@ import { removeAuthToken } from '../services/authService';
 import { createTheme } from '@mui/material/styles';
 import ProfileModal from './ProfileModal';
 import { User } from '../models/types';
+import logo from '../assets/logo.png';
 
 interface NavbarProps {
   user: User;
@@ -97,20 +98,13 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             {/* Logo/Brand */}
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                flexGrow: 1,
-                fontFamily: 'monospace',
-                fontWeight: 700,
-                letterSpacing: '.3rem',
-                color: 'inherit',
-                textDecoration: 'none',
-              }}
-            >
-              LOGO
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+              <img
+                src={logo}
+                alt="KSA Institute of Colour Therapy Logo"
+                style={{ height: 44, width: 'auto', marginRight: 16, display: 'block' }}
+              />
+            </Box>
 
             {/* Profile Section */}
             <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
