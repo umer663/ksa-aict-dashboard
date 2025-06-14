@@ -64,6 +64,7 @@ const UserManagement = () => {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState<NewUserForm>(initialForm);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -141,6 +142,13 @@ const UserManagement = () => {
     setTimeout(() => setSuccess(''), 2000);
   };
 
+  // Add this line to filter users based on search input
+  const filteredUsers = users.filter(
+    user =>
+      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      user.email.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" gutterBottom>User Management</Typography>
@@ -217,6 +225,16 @@ const UserManagement = () => {
       </Paper>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>Existing Users</Typography>
+        <Box sx={{ mt: 2, mb: 2 }}>
+          <TextField
+            placeholder="Search users by name or email"
+            variant="outlined"
+            size="small"
+            fullWidth
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </Box>
         <List>
           {filteredUsers.map((user, idx) => (
             <div key={user.email}>
@@ -247,7 +265,7 @@ const UserManagement = () => {
                   sx={{ color: user.blocked ? 'text.disabled' : 'inherit' }}
                 />
               </ListItem>
-              {idx < users.length - 1 && <Divider />}
+              {idx < filteredUsers.length - 1 && <Divider />}
             </div>
           ))}
         </List>
