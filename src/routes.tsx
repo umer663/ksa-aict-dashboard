@@ -47,7 +47,7 @@ const AppRoutes = () => {
             }
           >
             {getUserPermissions(user).includes('dashboard') && <Route path="/dashboard" element={<Dashboard />} />}
-            {getUserPermissions(user).includes('topics') && <Route path="/topics" element={<Topics />} />}
+            {/* {getUserPermissions(user).includes('topics') && <Route path="/topics" element={<Topics />} />} */}
             {getUserPermissions(user).includes('add-patient') && <Route path="/add-patient" element={<AddPatientHistory />} />}
             {getUserPermissions(user).includes('patient-history') && <Route path="/patient-history" element={<PatientHistory />} />}
             {getUserPermissions(user).includes('about') && <Route path="/about" element={<About />} />}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -13,6 +13,10 @@ import {
   Alert,
   useTheme,
   CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import {
   Visibility,
@@ -132,6 +136,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [lockoutEndTime, setLockoutEndTime] = useState<Date | null>(null);
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const navigate = useNavigate();
 
   // Add at the top of the component, after useNavigate():
@@ -306,7 +311,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           }}
           onClick={() => navigate('/introduction')}
         >
-          Khuwaja Shamsu Deen Azeemi
+          Khuwaja Shamsuddin Azeemi
         </Typography>
       </Box>
 
@@ -329,7 +334,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             textAlign: 'center',
           }}
         >
-          Login to the system
+          Login to Khuwaja Shamsuddin Azeemi Institute of Colour Therapy
         </Typography>
 
         {error && (
@@ -426,7 +431,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             sx={{ mb: 2 }}
           />
 
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          {/* <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
             <Typography
               variant="body2"
               sx={{
@@ -439,7 +444,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             >
               Forgot password?
             </Typography>
-          </Box>
+          </Box> */}
 
           <Button
             type="submit"
@@ -448,7 +453,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             disabled={isSubmitting || !isValid || !isDirty || isAccountLocked()}
             sx={{ 
               py: 1.5,
-              mb: 3,
+              mb: 2,
               bgcolor: 'primary.main',
               '&:hover': {
                 bgcolor: 'primary.dark',
@@ -474,6 +479,86 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             )}
           </Button>
 
+          {/* Web Application Overview Button */}
+          <Button
+            fullWidth
+            variant="outlined"
+            color="primary"
+            sx={{ mb: 3 }}
+            onClick={() => setOverviewOpen(true)}
+          >
+            Web Application Overview
+          </Button>
+
+          {/* Overview Modal */}
+          <Dialog
+            open={overviewOpen}
+            onClose={() => setOverviewOpen(false)}
+            maxWidth="md" // Changed from "sm" to "md" for wider modal
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 3,
+                p: 2,
+                minWidth: { xs: '90vw', sm: 700 }, // Responsive width
+                maxWidth: '900px',
+              },
+            }}
+          >
+            <DialogTitle
+              sx={{
+                fontWeight: 700,
+                fontSize: '1.5rem',
+                textAlign: 'center',
+                pb: 1,
+                color: 'primary.main',
+              }}
+            >
+              Website Overview – KSA AICT Dashboard
+            </DialogTitle>
+            <DialogContent
+              dividers={false}
+              sx={{
+                px: { xs: 1, sm: 4 },
+                py: 2,
+                maxHeight: 'none', // Remove scroll
+                overflow: 'visible',
+              }}
+            >
+              <Typography gutterBottom sx={{ fontSize: '1.1rem', mb: 2 }}>
+                The KSA AICT Dashboard is a specialized web application designed to streamline and manage data collection for patients undergoing Colour Therapy. This platform serves as a centralized digital solution to support therapists and healthcare professionals in tracking patient progress, recording therapy sessions, and maintaining accurate, up-to-date patient records.
+              </Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1 }}>
+                Key Features:
+              </Typography>
+              <Box component="ul" sx={{ pl: 3, mb: 2 }}>
+                <li>
+                  <b>Secure Login Access:</b> Ensures that only authorized users, such as therapists and administrators, can access sensitive patient information.
+                </li>
+                <li>
+                  <b>Patient Data Management:</b> Allows for systematic input and monitoring of individual patient data related to Colour Therapy treatments.
+                </li>
+                <li>
+                  <b>Therapy Tracking:</b> Facilitates the documentation of therapy sessions, color responses, and therapeutic outcomes to assess the effectiveness of treatment over time.
+                </li>
+                <li>
+                  <b>User-Friendly Interface:</b> Developed with usability in mind, enabling smooth navigation and efficient data entry.
+                </li>
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mt: 2, mb: 1 }}>
+                Purpose:
+              </Typography>
+              <Typography sx={{ fontSize: '1.1rem' }}>
+                This application is a vital tool in modernizing the practice of Colour Therapy by digitizing patient records and therapy progress. It enhances the accuracy, accessibility, and confidentiality of treatment data, ultimately contributing to more personalized and effective therapeutic care.
+              </Typography>
+            </DialogContent>
+            <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+              <Button onClick={() => setOverviewOpen(false)} color="primary" variant="contained" sx={{ px: 4, borderRadius: 2 }}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           <Typography 
             variant="body2" 
             sx={{ 
@@ -497,4 +582,4 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   );
 };
 
-export default LoginForm; 
+export default LoginForm;

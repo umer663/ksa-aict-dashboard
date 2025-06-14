@@ -62,7 +62,7 @@ const menuItems = [
   { text: 'About', icon: <Info />, path: '/about' },
   { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
   { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
-  { text: 'Topics', icon: <MenuBook />, path: '/topics' },
+  // { text: 'Topics', icon: <MenuBook />, path: '/topics' },
   { text: 'Bug / Feature', icon: <BugReport />, path: '/bug-feature' },
   { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
   { text: 'Contact', icon: <ContactMail />, path: '/contact' },
