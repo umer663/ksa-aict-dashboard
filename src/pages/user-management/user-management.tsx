@@ -44,13 +44,16 @@ const allPages = [
   { key: 'profile', label: 'Profile' },
   { key: 'bug-feature', label: 'Bug / Feature' },
   { key: 'user-management', label: 'User Management' },
+  { key: 'tutorials', label: 'Tutorials' },
 ];
 
 const rolePermissions: Record<UserRole, string[]> = {
   SuperAdmin: allPages.map(p => p.key),
   Admin: allPages.map(p => p.key),
   Therapist: allPages.map(p => p.key),
-  Receptionist: ['dashboard', 'contact', 'profile', 'about', 'bug-feature'],
+  Receptionist: [
+    'dashboard', 'contact', 'profile', 'about', 'bug-feature', 'tutorials'
+  ],
 };
 
 const UserManagement = () => {
@@ -61,7 +64,6 @@ const UserManagement = () => {
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState<NewUserForm>(initialForm);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -139,12 +141,6 @@ const UserManagement = () => {
     setTimeout(() => setSuccess(''), 2000);
   };
 
-  const filteredUsers = users.filter(user => 
-    user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.role.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" gutterBottom>User Management</Typography>
@@ -221,17 +217,6 @@ const UserManagement = () => {
       </Paper>
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>Existing Users</Typography>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Search users by name, email or role..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ mb: 2 }}
-          InputProps={{
-            startAdornment: <Search sx={{ color: 'text.secondary', mr: 1 }} />,
-          }}
-        />
         <List>
           {filteredUsers.map((user, idx) => (
             <div key={user.email}>
@@ -370,4 +355,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-export { rolePermissions, allPages }; 
+export { rolePermissions, allPages };

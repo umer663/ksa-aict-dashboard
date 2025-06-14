@@ -19,6 +19,7 @@ import Introduction from './pages/introduction';
 import UserManagement from './pages/user-management';
 import { rolePermissions as defaultRolePermissions, allPages } from './pages/user-management/user-management';
 import BugFeature from './pages/bug-feature';
+import Tutorials from './pages/tutorials';
 
 const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
 
@@ -57,6 +58,7 @@ const AppRoutes = () => {
               <Route path="/user-management" element={<UserManagement />} />
             )}
             {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature />} />}
+            {getUserPermissions(user).includes('tutorials') && <Route path="/tutorials" element={<Tutorials />} />}
             <Route path="*" element={<Navigate to={`/${getUserPermissions(user)[0]}`} replace />} />
           </Route>
         ) : (
@@ -71,4 +73,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;

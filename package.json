@@ -9,8 +9,8 @@
     "build": "tsc && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "pnpm run build",
-    "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umarreactdev/ksa-aict-dashboard.git main:gh-pages"
+    "predeploy": "npm run build",
+    "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umarreactdev/ksa-aict-dashboard.git master:gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
