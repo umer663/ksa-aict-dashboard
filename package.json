@@ -2,14 +2,14 @@
   "name": "aict-dashboard",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://github.com/umer663/ksa-aict-dashboard",
+  "homepage": "https://umer663.github.io/ksa-aict-dashboard/",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cp dist/index.html dist/404.html",
     "lint": "eslint .",
     "preview": "vite preview",
-    "predeploy": "npm run build",
+    "predeploy": "pnpm run build",
     "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umer663/ksa-aict-dashboard.git master:gh-pages"
   },
   "dependencies": {

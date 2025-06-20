@@ -33,17 +33,17 @@ const Introduction = () => {
                 fontWeight: 600,
               }}
             >
-              Khuwaja Shamsu Deen Azeemi
+              Khawaja Shamsu Deen Azeemi
             </Typography>
 
             <Typography variant="body1" paragraph>
-              Khuwaja Shamsu Deen Azeemi was a renowned spiritual leader and pioneer in the field of color therapy.
+              Khawaja Shamsu Deen Azeemi was a renowned spiritual leader and pioneer in the field of color therapy.
               His groundbreaking work in chromotherapy has helped countless individuals achieve physical, mental,
               and spiritual well-being through the therapeutic application of colors.
             </Typography>
 
             <Typography variant="body1" paragraph>
-              Born in the early 20th century, Khuwaja Shamsu Deen Azeemi dedicated his life to understanding
+              Born in the early 20th century, Khawaja Shamsu Deen Azeemi dedicated his life to understanding
               the profound impact of colors on human consciousness and health. He developed a comprehensive
               system of color therapy that combines ancient wisdom with modern scientific principles.
             </Typography>
