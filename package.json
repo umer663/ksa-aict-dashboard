@@ -2,7 +2,7 @@
   "name": "aict-dashboard",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://umarreactdev.github.io/ksa-aict-dashboard",
+  "homepage": "https://github.com/umer663/ksa-aict-dashboard",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umarreactdev/ksa-aict-dashboard.git master:gh-pages"
+    "deploy": "cd dist && git init && git add -A && git commit -m 'deploy' && git push -f https://github.com/umer663/ksa-aict-dashboard.git master:gh-pages"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

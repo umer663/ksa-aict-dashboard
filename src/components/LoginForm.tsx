@@ -311,7 +311,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           }}
           onClick={() => navigate('/introduction')}
         >
-          Khuwaja Shamsuddin Azeemi
+          Khawaja Shamsuddin Azeemi
         </Typography>
       </Box>
 
@@ -334,7 +334,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             textAlign: 'center',
           }}
         >
-          Login to Khuwaja Shamsuddin Azeemi Institute of Colour Therapy
+          Login to Khawaja Shamsuddin Azeemi Institute of Colour Therapy
         </Typography>
 
         {error && (
