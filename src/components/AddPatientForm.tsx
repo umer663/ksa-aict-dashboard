@@ -97,7 +97,14 @@ const AddPatientForm = () => {
       heart_rate: 0,
       current_symptoms: [],
     },
-    doctor_notes: '',
+    doctor_notes: [],
+    presenting_complains: [],
+    history_of_presenting_complains: [],
+    family_medical_history: [],
+    diagnosis: [],
+    treatment_plan: [],
+    follow_up_plans: [],
+    therapist_name: '',
     date_of_visit: new Date().toISOString(),
   });
 
@@ -226,7 +233,7 @@ const AddPatientForm = () => {
           }
         };
       }
-      // For simple string fields like doctor_notes and date_of_visit
+      // For simple string fields like doctor_notes, presenting_complains, etc.
       return {
         ...prev,
         [section]: value
@@ -288,6 +295,26 @@ const AddPatientForm = () => {
       }));
       setNewAllergy('');
     }
+  };
+
+  // Handle text area changes for bullet point fields
+  const handleTextAreaChange = (field: keyof FormDataType, value: string) => {
+    // Split by newlines and filter out empty lines
+    const bulletPoints = value.split('\n').filter(line => line.trim() !== '');
+    
+    setFormData(prev => ({
+      ...prev,
+      [field]: bulletPoints
+    }));
+  };
+
+  // Convert array to display text for text areas
+  const getDisplayText = (field: keyof FormDataType): string => {
+    const value = formData[field];
+    if (Array.isArray(value)) {
+      return value.join('\n');
+    }
+    return '';
   };
 
   // Validate all form fields before submission
@@ -354,6 +381,13 @@ const AddPatientForm = () => {
         lifestyle: formData.lifestyle,
         current_health_status: formData.current_health_status,
         doctor_notes: formData.doctor_notes,
+        presenting_complains: formData.presenting_complains,
+        history_of_presenting_complains: formData.history_of_presenting_complains,
+        family_medical_history: formData.family_medical_history,
+        diagnosis: formData.diagnosis,
+        treatment_plan: formData.treatment_plan,
+        follow_up_plans: formData.follow_up_plans,
+        therapist_name: formData.therapist_name,
         date_of_visit: formData.date_of_visit,
       };
 
@@ -400,73 +434,24 @@ const AddPatientForm = () => {
         onSubmit={handleSubmit}
         noValidate
       >
-        {/* Personal Information Section */}
+        {/* Therapist Name Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
-            Personal Information
+            Therapist Name
           </Typography>
           <Grid container spacing={3}>
-            {/* First Name Field */}
             <Grid item xs={12} sm={6}>
               <TextField
-                required
+                  required
                 fullWidth
-                label="First Name"
-                value={formData.personal_info.first_name}
-                onChange={(e) => handleInputChange('personal_info', 'first_name', e.target.value)}
-                error={hasError('personal_info.first_name')}
-                helperText={getErrorMessage('personal_info.first_name')}
-                inputProps={{ maxLength: 50 }}
+                // label="Therapist Name"
+                value={formData.therapist_name}
+                onChange={(e) => handleInputChange('therapist_name', '', e.target.value)}
+                placeholder="Enter therapist name"
+                error={hasError('therapist_name')}
+                helperText={getErrorMessage('therapist_name')}
+                inputProps={{ maxLength: 100 }}
               />
-            </Grid>
-            {/* Last Name Field */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Last Name"
-                value={formData.personal_info.last_name}
-                onChange={(e) => handleInputChange('personal_info', 'last_name', e.target.value)}
-                error={hasError('personal_info.last_name')}
-                helperText={getErrorMessage('personal_info.last_name')}
-                inputProps={{ maxLength: 50 }}
-              />
-            </Grid>
-            {/* Date of Birth Field */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                type="date"
-                label="Date of Birth"
-                InputLabelProps={{ shrink: true }}
-                value={formData.personal_info.date_of_birth}
-                onChange={(e) => handleInputChange('personal_info', 'date_of_birth', e.target.value)}
-                error={hasError('personal_info.date_of_birth')}
-                helperText={getErrorMessage('personal_info.date_of_birth')}
-              />
-            </Grid>
-            {/* Gender Selection Field */}
-            <Grid item xs={12} sm={6}>
-              <FormControl 
-                fullWidth 
-                required
-                error={hasError('personal_info.gender')}
-              >
-                <InputLabel>Gender</InputLabel>
-                <Select
-                  value={formData.personal_info.gender}
-                  label="Gender"
-                  onChange={(e) => handleInputChange('personal_info', 'gender', e.target.value)}
-                >
-                  <MenuItem value="Male">Male</MenuItem>
-                  <MenuItem value="Female">Female</MenuItem>
-                  <MenuItem value="Other">Other</MenuItem>
-                </Select>
-                {hasError('personal_info.gender') && (
-                  <FormHelperText>{getErrorMessage('personal_info.gender')}</FormHelperText>
-                )}
-              </FormControl>
             </Grid>
           </Grid>
         </StyledPaper>
@@ -575,114 +560,6 @@ const AddPatientForm = () => {
           </Grid>
         </StyledPaper>
 
-        {/* Medical History Section */}
-        <StyledPaper>
-          <Typography variant="h6" gutterBottom color="primary">
-            Medical History
-          </Typography>
-          <Grid container spacing={3}>
-            {/* Chronic Diseases Input */}
-            <Grid item xs={12}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  fullWidth
-                  label="Add Chronic Disease"
-                  value={newDisease}
-                  onChange={(e) => setNewDisease(e.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleAddDisease}
-                  startIcon={<AddIcon />}
-                  disabled={!newDisease}
-                >
-                  Add
-                </Button>
-              </Stack>
-              <Box sx={{ mt: 2 }}>
-                {diseases.map((disease) => (
-                  <Chip
-                    key={disease}
-                    label={disease}
-                    onDelete={() => {
-                      setDiseases(diseases.filter((d) => d !== disease));
-                    }}
-                    sx={{ m: 0.5 }}
-                  />
-                ))}
-              </Box>
-            </Grid>
-            
-            {/* Medications Input */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
-                Current Medications
-              </Typography>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  fullWidth
-                  label="Add Medication"
-                  value={formData.medical_history.medications.join(', ')}
-                  onChange={(e) => handleInputChange('medical_history', 'medications', e.target.value.split(',').map(item => item.trim()))}
-                  placeholder="Enter medications separated by commas"
-                  multiline
-                  rows={2}
-                  helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
-                />
-              </Stack>
-            </Grid>
-            
-            {/* Allergies Input */}
-            <Grid item xs={12}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  fullWidth
-                  label="Add Allergy"
-                  value={newAllergy}
-                  onChange={(e) => setNewAllergy(e.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  onClick={handleAddAllergy}
-                  startIcon={<AddIcon />}
-                  disabled={!newAllergy}
-                >
-                  Add
-                </Button>
-              </Stack>
-              <Box sx={{ mt: 2 }}>
-                {allergies.map((allergy) => (
-                  <Chip
-                    key={allergy}
-                    label={allergy}
-                    onDelete={() => {
-                      setAllergies(allergies.filter((a) => a !== allergy));
-                    }}
-                    sx={{ m: 0.5 }}
-                  />
-                ))}
-              </Box>
-            </Grid>
-
-            {/* Doctor's Notes */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
-                Doctor's Notes
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                label="Medical Notes"
-                value={formData.doctor_notes}
-                onChange={(e) => handleInputChange('doctor_notes', '', e.target.value)}
-                placeholder="Enter detailed medical notes, observations, or special instructions"
-                helperText="Include any relevant medical observations, treatment plans, or special instructions"
-              />
-            </Grid>
-          </Grid>
-        </StyledPaper>
-
         {/* Current Health Status Section */}
         <StyledPaper>
           <Typography variant="h6" gutterBottom color="primary">
@@ -742,6 +619,209 @@ const AddPatientForm = () => {
                 error={hasError('current_health_status.heart_rate')}
                 helperText={getErrorMessage('current_health_status.heart_rate')}
                 inputProps={{ min: 30, max: 250 }}
+              />
+            </Grid>
+          </Grid>
+        </StyledPaper>
+
+        {/* Medical History Section */}
+        <StyledPaper>
+          <Typography variant="h6" gutterBottom color="primary">
+            Medical History
+          </Typography>
+          <Grid container spacing={3}>
+            {/* Chronic Diseases Input */}
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  fullWidth
+                  // label="Add Chronic Disease"
+                  value={newDisease}
+                  onChange={(e) => setNewDisease(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleAddDisease}
+                  startIcon={<AddIcon />}
+                  disabled={!newDisease}
+                >
+                  Add
+                </Button>
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                {diseases.map((disease) => (
+                  <Chip
+                    key={disease}
+                    label={disease}
+                    onDelete={() => {
+                      setDiseases(diseases.filter((d) => d !== disease));
+                    }}
+                    sx={{ m: 0.5 }}
+                  />
+                ))}
+              </Box>
+            </Grid>
+            
+            {/* Medications Input */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Current Medications
+              </Typography>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  fullWidth
+                  // label="Add Medication"
+                  value={formData.medical_history.medications.join(', ')}
+                  onChange={(e) => handleInputChange('medical_history', 'medications', e.target.value.split(',').map(item => item.trim()))}
+                  placeholder="Enter medications separated by commas"
+                  multiline
+                  rows={2}
+                  helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
+                />
+              </Stack>
+            </Grid>
+            
+            {/* Allergies Input */}
+            <Grid item xs={12}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <TextField
+                  fullWidth
+                  label="Add Allergy"
+                  value={newAllergy}
+                  onChange={(e) => setNewAllergy(e.target.value)}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleAddAllergy}
+                  startIcon={<AddIcon />}
+                  disabled={!newAllergy}
+                >
+                  Add
+                </Button>
+              </Stack>
+              <Box sx={{ mt: 2 }}>
+                {allergies.map((allergy) => (
+                  <Chip
+                    key={allergy}
+                    label={allergy}
+                    onDelete={() => {
+                      setAllergies(allergies.filter((a) => a !== allergy));
+                    }}
+                    sx={{ m: 0.5 }}
+                  />
+                ))}
+              </Box>
+            </Grid>
+
+            {/* Presenting Complains */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Presenting Complains
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('presenting_complains')}
+                onChange={(e) => handleTextAreaChange('presenting_complains', e.target.value)}
+                placeholder="Enter each complain on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* History of Presenting Complains */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                History of Presenting Complains
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('history_of_presenting_complains')}
+                onChange={(e) => handleTextAreaChange('history_of_presenting_complains', e.target.value)}
+                placeholder="Enter each history point on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Family Medical History */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Family Medical History
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('family_medical_history')}
+                onChange={(e) => handleTextAreaChange('family_medical_history', e.target.value)}
+                placeholder="Enter each family history point on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Diagnosis */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Diagnosis
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('diagnosis')}
+                onChange={(e) => handleTextAreaChange('diagnosis', e.target.value)}
+                placeholder="Enter each diagnosis on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Doctor's Notes */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Doctor's Notes
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('doctor_notes')}
+                onChange={(e) => handleTextAreaChange('doctor_notes', e.target.value)}
+                placeholder="Enter each note on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Treatment Plan */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Treatment Plan
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('treatment_plan')}
+                onChange={(e) => handleTextAreaChange('treatment_plan', e.target.value)}
+                placeholder="Enter each treatment step on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Follow Up Plans */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Follow Up Plans
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('follow_up_plans')}
+                onChange={(e) => handleTextAreaChange('follow_up_plans', e.target.value)}
+                placeholder="Enter each follow up plan on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
               />
             </Grid>
           </Grid>

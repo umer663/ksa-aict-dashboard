@@ -294,24 +294,47 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
           }}
         />
-        {/* <Typography variant="h4" component="h1" gutterBottom>
-          Welcome
-        </Typography> */}
         <Typography 
           variant="h5" 
           align="center"
           sx={{
-            mb: 2,
+            mb: 12,
             fontWeight: 500,
             cursor: 'pointer',
             textDecoration: 'underline',
             '&:hover': {
               opacity: 0.8,
+              color: 'white',
             },
           }}
           onClick={() => navigate('/introduction')}
         >
           Khawaja Shamsuddin Azeemi
+        </Typography>
+        
+        {/* Institute Attribution */}
+        <Typography
+          variant="body2"
+          component="a"
+          href="https://azeemicolourtherapy.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            textAlign: 'center',
+            fontSize: '0.875rem',
+            color: 'white',
+            textDecoration: 'none',
+            '&:hover': {
+              opacity: 0.8,
+              textDecoration: 'underline',
+              color: 'white',
+            },
+            lineHeight: 1.4,
+            fontWeight: 400,
+            maxWidth: '300px',
+          }}
+        >
+          A Project of Khawaja Shamsuddin Azeemi Institute of Colour Therapy
         </Typography>
       </Box>
 
@@ -334,7 +357,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             textAlign: 'center',
           }}
         >
-          Login to Khawaja Shamsuddin Azeemi Institute of Colour Therapy
+          Login to Dashboard
         </Typography>
 
         {error && (

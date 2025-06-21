@@ -81,7 +81,14 @@ export interface PatientData {
     dietary_habits: string;
   };
   current_health_status: CurrentHealthStatus;
-  doctor_notes: string;
+  doctor_notes: string[];
+  presenting_complains: string[];
+  history_of_presenting_complains: string[];
+  family_medical_history: string[];
+  diagnosis: string[];
+  treatment_plan: string[];
+  follow_up_plans: string[];
+  therapist_name: string;
   date_of_visit: string;
   last_modified?: string;
 }

@@ -147,6 +147,27 @@ const Sidebar = ({ user }: SidebarProps) => {
       >
         <Typography
           variant="caption"
+          component="a"
+          href="https://www.azeemicolourtherapy.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            display: 'block',
+            fontSize: '0.75rem',
+            color: 'text.secondary',
+            textDecoration: 'none',
+            mb: 1,
+            '&:hover': {
+              color: 'primary.main',
+              textDecoration: 'underline',
+            },
+            lineHeight: 1.4,
+          }}
+        >
+          A Project of Khawaja Shamsuddin Azeemi Institute of Colour Therapy
+        </Typography>
+        <Typography
+          variant="caption"
           color="text.secondary"
           sx={{
             display: 'block',
