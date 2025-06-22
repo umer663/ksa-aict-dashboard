@@ -37,10 +37,12 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 }));
 
 const steps = [
+  'Therapist Information',
   'Personal Information',
   'Contact Details',
+  'Current Health Status',
   'Medical History',
-  'Current Health'
+  'Clinical Notes'
 ];
 
 const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalProps) => {
@@ -85,6 +87,26 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
     }));
   };
 
+  // Handle text area changes for bullet point fields
+  const handleTextAreaChange = (field: keyof PatientData, value: string) => {
+    // Split by newlines but keep empty lines for now
+    const lines = value.split('\n');
+    
+    setFormData(prev => ({
+      ...prev,
+      [field]: lines
+    }));
+  };
+
+  // Convert array to display text for text areas
+  const getDisplayText = (field: keyof PatientData): string => {
+    const value = formData[field];
+    if (Array.isArray(value)) {
+      return value.join('\n');
+    }
+    return '';
+  };
+
   const handleAddDisease = () => {
     if (newDisease && !diseases.includes(newDisease)) {
       const updatedDiseases = [...diseases, newDisease];
@@ -125,9 +147,21 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
 
   const handleSave = async () => {
     try {
+      // Filter out empty lines from text area fields before saving
+      const cleanedFormData = {
+        ...formData,
+        doctor_notes: Array.isArray(formData.doctor_notes) ? formData.doctor_notes.filter(line => line.trim() !== '') : [],
+        presenting_complains: Array.isArray(formData.presenting_complains) ? formData.presenting_complains.filter(line => line.trim() !== '') : [],
+        history_of_presenting_complains: Array.isArray(formData.history_of_presenting_complains) ? formData.history_of_presenting_complains.filter(line => line.trim() !== '') : [],
+        family_medical_history: Array.isArray(formData.family_medical_history) ? formData.family_medical_history.filter(line => line.trim() !== '') : [],
+        diagnosis: Array.isArray(formData.diagnosis) ? formData.diagnosis.filter(line => line.trim() !== '') : [],
+        treatment_plan: Array.isArray(formData.treatment_plan) ? formData.treatment_plan.filter(line => line.trim() !== '') : [],
+        follow_up_plans: Array.isArray(formData.follow_up_plans) ? formData.follow_up_plans.filter(line => line.trim() !== '') : [],
+      };
+
       // Add timestamp for audit
       const updatedPatient = {
-        ...formData,
+        ...cleanedFormData,
         last_modified: new Date().toISOString(),
       };
       
@@ -144,7 +178,22 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
 
   const renderStepContent = (step: number) => {
     switch (step) {
-      case 0:
+      case 0: // Therapist Information
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Therapist Name"
+                value={formData.therapist_name || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, therapist_name: e.target.value }))}
+                placeholder="Enter therapist name"
+              />
+            </Grid>
+          </Grid>
+        );
+
+      case 1: // Personal Information
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
@@ -190,7 +239,7 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
           </Grid>
         );
 
-      case 1:
+      case 2: // Contact Details
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
@@ -261,7 +310,49 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
           </Grid>
         );
 
-      case 2:
+      case 3: // Current Health Status
+        return (
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Height (cm)"
+                value={formData.current_health_status.height_cm}
+                onChange={(e) => handleInputChange('current_health_status', 'height_cm', Number(e.target.value))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Weight (kg)"
+                value={formData.current_health_status.weight_kg}
+                onChange={(e) => handleInputChange('current_health_status', 'weight_kg', Number(e.target.value))}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Blood Pressure"
+                value={formData.current_health_status.blood_pressure}
+                onChange={(e) => handleInputChange('current_health_status', 'blood_pressure', e.target.value)}
+                placeholder="120/80"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Heart Rate (bpm)"
+                value={formData.current_health_status.heart_rate}
+                onChange={(e) => handleInputChange('current_health_status', 'heart_rate', Number(e.target.value))}
+              />
+            </Grid>
+          </Grid>
+        );
+
+      case 4: // Medical History
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
@@ -309,10 +400,12 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
               </Typography>
               <TextField
                 fullWidth
-                label="Medications"
-                value={formData.medical_history.medications.map(med => 
-                  typeof med === 'string' ? med : med.medication_name
-                ).join(', ')}
+                value={Array.isArray(formData.medical_history.medications) 
+                  ? formData.medical_history.medications.map(med => 
+                      typeof med === 'string' ? med : med.medication_name
+                    ).join(', ')
+                  : ''
+                }
                 onChange={(e) => {
                   const medicationNames = e.target.value.split(',').map(med => med.trim()).filter(med => med);
                   const medications = medicationNames.map(name => ({
@@ -332,7 +425,7 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                 placeholder="Enter medications separated by commas"
                 multiline
                 rows={2}
-                helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
+                helperText="Enter each medication separated by a comma"
               />
             </Grid>
             
@@ -373,6 +466,75 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                 ))}
               </Box>
             </Grid>
+          </Grid>
+        );
+
+      case 5: // Clinical Notes
+        return (
+          <Grid container spacing={3}>
+            {/* Presenting Complains */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Presenting Complains
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('presenting_complains')}
+                onChange={(e) => handleTextAreaChange('presenting_complains', e.target.value)}
+                placeholder="Enter each complain on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* History of Presenting Complains */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                History of Presenting Complains
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('history_of_presenting_complains')}
+                onChange={(e) => handleTextAreaChange('history_of_presenting_complains', e.target.value)}
+                placeholder="Enter each history point on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Family Medical History */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Family Medical History
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('family_medical_history')}
+                onChange={(e) => handleTextAreaChange('family_medical_history', e.target.value)}
+                placeholder="Enter each family history point on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
+
+            {/* Diagnosis */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Diagnosis
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                value={getDisplayText('diagnosis')}
+                onChange={(e) => handleTextAreaChange('diagnosis', e.target.value)}
+                placeholder="Enter each diagnosis on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
+              />
+            </Grid>
 
             {/* Doctor's Notes */}
             <Grid item xs={12}>
@@ -383,57 +545,42 @@ const EditPatientModal = ({ open, onClose, patient, onSave }: EditPatientModalPr
                 fullWidth
                 multiline
                 rows={4}
-                label="Medical Notes"
-                value={formData.doctor_notes}
-                onChange={(e) => {
-                  setFormData((prev) => ({
-                    ...prev,
-                    doctor_notes: e.target.value,
-                  }));
-                }}
-                placeholder="Enter detailed medical notes, observations, or special instructions"
-                helperText="Include any relevant medical observations, treatment plans, or special instructions"
+                value={getDisplayText('doctor_notes')}
+                onChange={(e) => handleTextAreaChange('doctor_notes', e.target.value)}
+                placeholder="Enter each note on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
               />
             </Grid>
-          </Grid>
-        );
 
-      case 3:
-        return (
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
+            {/* Treatment Plan */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Treatment Plan
+              </Typography>
               <TextField
                 fullWidth
-                type="number"
-                label="Height (cm)"
-                value={formData.current_health_status.height_cm}
-                onChange={(e) => handleInputChange('current_health_status', 'height_cm', e.target.value)}
+                multiline
+                rows={4}
+                value={getDisplayText('treatment_plan')}
+                onChange={(e) => handleTextAreaChange('treatment_plan', e.target.value)}
+                placeholder="Enter each treatment step on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+
+            {/* Follow Up Plans */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="primary" sx={{ mb: 2 }}>
+                Follow Up Plans
+              </Typography>
               <TextField
                 fullWidth
-                type="number"
-                label="Weight (kg)"
-                value={formData.current_health_status.weight_kg}
-                onChange={(e) => handleInputChange('current_health_status', 'weight_kg', e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Blood Pressure"
-                value={formData.current_health_status.blood_pressure}
-                onChange={(e) => handleInputChange('current_health_status', 'blood_pressure', e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                type="number"
-                label="Heart Rate (bpm)"
-                value={formData.current_health_status.heart_rate}
-                onChange={(e) => handleInputChange('current_health_status', 'heart_rate', e.target.value)}
+                multiline
+                rows={4}
+                value={getDisplayText('follow_up_plans')}
+                onChange={(e) => handleTextAreaChange('follow_up_plans', e.target.value)}
+                placeholder="Enter each follow up plan on a new line (press Enter for bullet points)"
+                helperText="Each line will become a bullet point. Press Enter to add new points."
               />
             </Grid>
           </Grid>

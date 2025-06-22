@@ -112,7 +112,14 @@ const defaultPatientData: PatientData = {
     heart_rate: 0,
     current_symptoms: [],
   },
-  doctor_notes: "",
+  doctor_notes: [],
+  presenting_complains: [],
+  history_of_presenting_complains: [],
+  family_medical_history: [],
+  diagnosis: [],
+  treatment_plan: [],
+  follow_up_plans: [],
+  therapist_name: "",
   date_of_visit: "",
 };
 
@@ -132,12 +139,38 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
     visible: { y: 0, opacity: 1 },
   };
 
+  // Helper function to render bullet points
+  const renderBulletPoints = (items: string[]) => {
+    if (!items || items.length === 0) {
+      return <Typography variant="body2" color="text.secondary">No data available</Typography>;
+    }
+    return (
+      <Box component="ul" sx={{ pl: 2, m: 0 }}>
+        {items.map((item, index) => (
+          <Typography key={index} component="li" variant="body2" sx={{ mb: 1 }}>
+            {item}
+          </Typography>
+        ))}
+      </Box>
+    );
+  };
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      {/* Therapist Information */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <Person color="primary" /> Therapist Information
+        </SectionTitle>
+        <Typography variant="h6" color="primary">
+          {patientData.therapist_name || 'Not specified'}
+        </Typography>
+      </MotionPaper>
+
       {/* Personal Information */}
       <MotionPaper variants={itemVariants}>
         <SectionTitle variant="h5">
@@ -187,73 +220,6 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
           </Grid>
         </Grid>
       </MotionPaper>
-
-      {/* Medical History */}
-      {patientData.medical_history && (
-        <MotionPaper variants={itemVariants}>
-          <SectionTitle variant="h5">
-            <LocalHospital color="primary" /> Medical History
-          </SectionTitle>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                Chronic Diseases
-              </Typography>
-              <Box>
-                {patientData.medical_history.chronic_diseases.map((disease: string) => (
-                  <InfoChip
-                    key={disease}
-                    label={disease}
-                    color="primary"
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>
-                Allergies
-              </Typography>
-              <Box>
-                {patientData.medical_history.allergies.map((allergy: string) => (
-                  <InfoChip
-                    key={allergy}
-                    label={allergy}
-                    color="error"
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-            </Grid>
-          </Grid>
-
-          <Box mt={3}>
-            <Typography variant="h6" gutterBottom>
-              Medications
-            </Typography>
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Medication</TableCell>
-                    <TableCell>Dosage</TableCell>
-                    <TableCell>Frequency</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {patientData.medical_history.medications.map((medication: any) => (
-                    <TableRow key={medication.medication_name}>
-                      <TableCell>{medication.medication_name}</TableCell>
-                      <TableCell>{medication.dosage}</TableCell>
-                      <TableCell>{medication.frequency}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        </MotionPaper>
-      )}
 
       {/* Current Health Status */}
       <MotionPaper variants={itemVariants}>
@@ -312,16 +278,131 @@ const PatientHistoryForm = ({ patientData = defaultPatientData }: PatientHistory
         </Grid>
       </MotionPaper>
 
-      {/* Doctor Notes */}
+      {/* Medical History */}
+      {patientData.medical_history && (
+        <MotionPaper variants={itemVariants}>
+          <SectionTitle variant="h5">
+            <LocalHospital color="primary" /> Medical History
+          </SectionTitle>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Chronic Diseases
+              </Typography>
+              <Box>
+                {patientData.medical_history.chronic_diseases.map((disease: string) => (
+                  <InfoChip
+                    key={disease}
+                    label={disease}
+                    color="primary"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Typography variant="h6" gutterBottom>
+                Allergies
+              </Typography>
+              <Box>
+                {patientData.medical_history.allergies.map((allergy: string) => (
+                  <InfoChip
+                    key={allergy}
+                    label={allergy}
+                    color="error"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+          </Grid>
+
+          <Box mt={3}>
+            <Typography variant="h6" gutterBottom>
+              Current Medications
+            </Typography>
+            <Box>
+              {Array.isArray(patientData.medical_history.medications) ? (
+                patientData.medical_history.medications.map((medication: any, index: number) => (
+                  <InfoChip
+                    key={index}
+                    label={typeof medication === 'string' ? medication : medication.medication_name}
+                    color="info"
+                    variant="outlined"
+                    sx={{ m: 0.5 }}
+                  />
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">No medications listed</Typography>
+              )}
+            </Box>
+          </Box>
+        </MotionPaper>
+      )}
+
+      {/* Presenting Complains */}
       <MotionPaper variants={itemVariants}>
         <SectionTitle variant="h5">
-          <Note color="primary" /> Doctor Notes
+          <Note color="primary" /> Presenting Complains
         </SectionTitle>
-        <Typography variant="body1" color="text.secondary">
-          {patientData.doctor_notes}
-        </Typography>
-        <Typography variant="caption" display="block" mt={2} color="text.secondary">
-          Last Visit: {new Date(patientData.date_of_visit).toLocaleString()}
+        {renderBulletPoints(patientData.presenting_complains)}
+      </MotionPaper>
+
+      {/* History of Presenting Complains */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <Note color="primary" /> History of Presenting Complains
+        </SectionTitle>
+        {renderBulletPoints(patientData.history_of_presenting_complains)}
+      </MotionPaper>
+
+      {/* Family Medical History */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <Note color="primary" /> Family Medical History
+        </SectionTitle>
+        {renderBulletPoints(patientData.family_medical_history)}
+      </MotionPaper>
+
+      {/* Diagnosis */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <LocalHospital color="primary" /> Diagnosis
+        </SectionTitle>
+        {renderBulletPoints(patientData.diagnosis)}
+      </MotionPaper>
+
+      {/* Doctor's Notes */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <Note color="primary" /> Doctor's Notes
+        </SectionTitle>
+        {renderBulletPoints(patientData.doctor_notes)}
+      </MotionPaper>
+
+      {/* Treatment Plan */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <LocalHospital color="primary" /> Treatment Plan
+        </SectionTitle>
+        {renderBulletPoints(patientData.treatment_plan)}
+      </MotionPaper>
+
+      {/* Follow Up Plans */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <AccessTime color="primary" /> Follow Up Plans
+        </SectionTitle>
+        {renderBulletPoints(patientData.follow_up_plans)}
+      </MotionPaper>
+
+      {/* Visit Information */}
+      <MotionPaper variants={itemVariants}>
+        <SectionTitle variant="h5">
+          <AccessTime color="primary" /> Visit Information
+        </SectionTitle>
+        <Typography variant="body2" color="text.secondary">
+          Date of Visit: {new Date(patientData.date_of_visit).toLocaleString()}
         </Typography>
       </MotionPaper>
     </motion.div>

@@ -20,6 +20,7 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Print as PrintIcon,
+  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import PatientHistoryForm from '../../components/PatientHistoryForm';
@@ -140,9 +141,13 @@ const PatientHistory = () => {
       {selectedPatient ? (
         <>
           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-            <IconButton onClick={() => setSelectedPatient(null)}>
+            <Button
+              variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              onClick={() => setSelectedPatient(null)}
+            >
               Back to List
-            </IconButton>
+            </Button>
             <Button
               variant="outlined"
               startIcon={<PrintIcon />}

@@ -299,12 +299,13 @@ const AddPatientForm = () => {
 
   // Handle text area changes for bullet point fields
   const handleTextAreaChange = (field: keyof FormDataType, value: string) => {
-    // Split by newlines and filter out empty lines
-    const bulletPoints = value.split('\n').filter(line => line.trim() !== '');
+    // Split by newlines but keep empty lines for now
+    // This allows users to type and press Enter to create new lines
+    const lines = value.split('\n');
     
     setFormData(prev => ({
       ...prev,
-      [field]: bulletPoints
+      [field]: lines
     }));
   };
 
@@ -351,14 +352,12 @@ const AddPatientForm = () => {
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Prevent default form submission
-    setSubmitted(true); // Mark form as submitted for validation display
+    e.preventDefault();
+    setSubmitted(true);
     
-    // Validate all fields
     const isValid = validateForm();
     
     if (!isValid) {
-      // Scroll to the first error
       const firstErrorField = document.querySelector('.Mui-error');
       if (firstErrorField) {
         firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -367,45 +366,49 @@ const AddPatientForm = () => {
     }
     
     try {
-      // Create new patient with generated ID
+      // Filter out empty lines from text area fields before saving
+      const cleanedFormData = {
+        ...formData,
+        doctor_notes: formData.doctor_notes.filter(line => line.trim() !== ''),
+        presenting_complains: formData.presenting_complains.filter(line => line.trim() !== ''),
+        history_of_presenting_complains: formData.history_of_presenting_complains.filter(line => line.trim() !== ''),
+        family_medical_history: formData.family_medical_history.filter(line => line.trim() !== ''),
+        diagnosis: formData.diagnosis.filter(line => line.trim() !== ''),
+        treatment_plan: formData.treatment_plan.filter(line => line.trim() !== ''),
+        follow_up_plans: formData.follow_up_plans.filter(line => line.trim() !== ''),
+      };
+
       const newPatient: PatientData = {
-        patient_id: `PAT${Date.now()}`, // Generate unique ID based on timestamp
+        patient_id: `PAT${Date.now()}`,
         personal_info: {
-          ...formData.personal_info,
+          ...cleanedFormData.personal_info,
         },
         medical_history: {
-          ...formData.medical_history,
+          ...cleanedFormData.medical_history,
           chronic_diseases: diseases,
           allergies: allergies,
         },
-        lifestyle: formData.lifestyle,
-        current_health_status: formData.current_health_status,
-        doctor_notes: formData.doctor_notes,
-        presenting_complains: formData.presenting_complains,
-        history_of_presenting_complains: formData.history_of_presenting_complains,
-        family_medical_history: formData.family_medical_history,
-        diagnosis: formData.diagnosis,
-        treatment_plan: formData.treatment_plan,
-        follow_up_plans: formData.follow_up_plans,
-        therapist_name: formData.therapist_name,
-        date_of_visit: formData.date_of_visit,
+        lifestyle: cleanedFormData.lifestyle,
+        current_health_status: cleanedFormData.current_health_status,
+        doctor_notes: cleanedFormData.doctor_notes,
+        presenting_complains: cleanedFormData.presenting_complains,
+        history_of_presenting_complains: cleanedFormData.history_of_presenting_complains,
+        family_medical_history: cleanedFormData.family_medical_history,
+        diagnosis: cleanedFormData.diagnosis,
+        treatment_plan: cleanedFormData.treatment_plan,
+        follow_up_plans: cleanedFormData.follow_up_plans,
+        therapist_name: cleanedFormData.therapist_name,
+        date_of_visit: cleanedFormData.date_of_visit,
       };
 
-    // Get existing patients from localStorage
-    const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-    
-      // Add new patient
+      const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');
       const updatedPatients = [...existingPatients, newPatient];
-    
-    // Save to localStorage
       localStorage.setItem('patients', JSON.stringify(updatedPatients));
-    
-      // Show success message
-    setOpenSnackbar(true);
       
-      // Navigate after a short delay to ensure data is saved
-    setTimeout(() => {
-      navigate('/patient-history');
+      setOpenSnackbar(true);
+      
+      setTimeout(() => {
+        navigate('/patient-history');
       }, 1500);
     } catch (error) {
       console.error('Error saving patient:', error);
@@ -421,6 +424,114 @@ const AddPatientForm = () => {
   // Helper function to get error message for a field
   const getErrorMessage = (path: string): string => {
     return submitted ? errors[path] || '' : '';
+  };
+
+  // Function to fill sample data
+  const fillSampleData = () => {
+    const sampleData: FormDataType = {
+      personal_info: {
+        first_name: 'John',
+        last_name: 'Doe',
+        date_of_birth: '1985-06-15',
+        gender: 'Male',
+        contact_number: '+1 (555) 123-4567',
+        email: 'john.doe@email.com',
+        address: {
+          street: '123 Oak Street',
+          city: 'Springfield',
+          state: 'Illinois',
+          postal_code: '62701',
+          country: 'United States',
+        },
+      },
+      medical_history: {
+        chronic_diseases: ['Diabetes Type 2', 'Hypertension', 'Asthma'],
+        previous_surgeries: [],
+        medications: [
+          { medication_name: 'Metformin', dosage: '500mg', frequency: 'twice daily' },
+          { medication_name: 'Lisinopril', dosage: '10mg', frequency: 'once daily' },
+          { medication_name: 'Albuterol inhaler', dosage: 'as needed', frequency: 'as needed' }
+        ],
+        allergies: ['Penicillin', 'Sulfa drugs', 'Peanuts'],
+        family_medical_history: [],
+      },
+      lifestyle: {
+        smoking: false,
+        alcohol_consumption: false,
+        exercise_frequency: '3 times per week',
+        dietary_habits: 'Balanced diet with low sodium',
+      },
+      current_health_status: {
+        height_cm: 175,
+        weight_kg: 70,
+        blood_pressure: '120/80',
+        heart_rate: 72,
+        current_symptoms: [],
+      },
+      doctor_notes: [
+        'Patient appears alert and oriented',
+        'Good compliance with current medications',
+        'Blood pressure well-controlled on current regimen',
+        'Recommend stress management techniques',
+        'Consider relaxation therapy for headache management'
+      ],
+      presenting_complains: [
+        'Patient reports persistent headaches for the past 2 weeks',
+        'Experiencing difficulty sleeping at night',
+        'Feeling fatigued throughout the day',
+        'Mild chest discomfort during physical activity'
+      ],
+      history_of_presenting_complains: [
+        'Headaches started gradually 2 weeks ago',
+        'Pain is bilateral and throbbing in nature',
+        'Worse in the morning and after stress',
+        'No previous history of similar headaches',
+        'No associated nausea or vomiting'
+      ],
+      family_medical_history: [
+        'Father has diabetes and heart disease',
+        'Mother has hypertension',
+        'Sister has asthma',
+        'No family history of cancer',
+        'Grandfather had stroke at age 65'
+      ],
+      diagnosis: [
+        'Tension-type headache',
+        'Insomnia secondary to stress',
+        'Mild anxiety symptoms',
+        'Well-controlled diabetes mellitus type 2',
+        'Stable hypertension'
+      ],
+      treatment_plan: [
+        'Prescribe amitriptyline 25mg at bedtime for headache prophylaxis',
+        'Recommend daily relaxation exercises',
+        'Schedule follow-up in 2 weeks',
+        'Continue current diabetes and hypertension medications',
+        'Advise regular exercise program'
+      ],
+      follow_up_plans: [
+        'Return in 2 weeks for headache assessment',
+        'Blood pressure monitoring at home',
+        'Blood glucose monitoring as per diabetes protocol',
+        'Contact if headache becomes severe or persistent',
+        'Consider referral to stress management specialist if needed'
+      ],
+      therapist_name: 'Dr. Sarah Johnson',
+      date_of_visit: new Date().toISOString(),
+    };
+
+    // Set the form data
+    setFormData(sampleData);
+    
+    // Set the diseases and allergies arrays
+    setDiseases(sampleData.medical_history.chronic_diseases);
+    setAllergies(sampleData.medical_history.allergies);
+    
+    // Clear any existing errors
+    setErrors({});
+    
+    // Show success message
+    setOpenSnackbar(true);
   };
 
   return (
@@ -442,9 +553,8 @@ const AddPatientForm = () => {
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6}>
               <TextField
-                  required
+                required
                 fullWidth
-                // label="Therapist Name"
                 value={formData.therapist_name}
                 onChange={(e) => handleInputChange('therapist_name', '', e.target.value)}
                 placeholder="Enter therapist name"
@@ -452,6 +562,17 @@ const AddPatientForm = () => {
                 helperText={getErrorMessage('therapist_name')}
                 inputProps={{ maxLength: 100 }}
               />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={fillSampleData}
+                sx={{ height: '56px' }}
+                startIcon={<AddIcon />}
+              >
+                Fill Sample Data
+              </Button>
             </Grid>
           </Grid>
         </StyledPaper>
@@ -671,12 +792,15 @@ const AddPatientForm = () => {
                 <TextField
                   fullWidth
                   // label="Add Medication"
-                  value={formData.medical_history.medications.join(', ')}
-                  onChange={(e) => handleInputChange('medical_history', 'medications', e.target.value.split(',').map(item => item.trim()))}
-                  placeholder="Enter medications separated by commas"
+                  value={formData.medical_history.medications.map(m => `${m.medication_name} (${m.dosage}, ${m.frequency})`).join(', ')}
+                  onChange={(e) => handleInputChange('medical_history', 'medications', e.target.value.split(',').map(item => {
+                    const [medication_name, dosage, frequency] = item.trim().split(' ');
+                    return { medication_name, dosage, frequency };
+                  }))}
+                  placeholder="Enter medications in the format: Medication (Dosage, Frequency)"
                   multiline
                   rows={2}
-                  helperText="Enter each medication separated by a comma (e.g., Aspirin, Insulin, etc.)"
+                  helperText="Enter each medication in the specified format"
                 />
               </Stack>
             </Grid>
