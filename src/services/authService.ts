@@ -1,4 +1,8 @@
-import { LoginResponse, UserRole } from '../models/types';
+import { LoginResponse, UserRole, User } from '../models/types';
+import { auth, db } from './firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock user data - in real app, this would be your backend validation
 const MOCK_USERS = [
@@ -33,35 +37,47 @@ const MOCK_USERS = [
 ];
 
 export const loginUser = async (email: string, password: string): Promise<LoginResponse> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  const user = MOCK_USERS.find(
-    (u) => u.email === email && u.password === password
-  );
-
-  if (user) {
-    if (user.blocked) {
-      return {
-        success: false,
-        error: 'Your account has been blocked. Please contact the administrator.',
-      };
+  try {
+    // Sign in with Firebase Auth
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userAuth = userCredential.user;
+    // Fetch user profile from Firestore
+    const userDoc = await getDoc(doc(db, 'users', userAuth.uid));
+    if (!userDoc.exists()) {
+      return { success: false, error: 'User profile not found in database.' };
     }
-    return {
-      success: true,
-      user: {
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        blocked: user.blocked,
-      },
-    };
+    const userData = userDoc.data() as User;
+    if (userData.blocked) {
+      return { success: false, error: 'Your account has been blocked. Please contact the administrator.' };
+    }
+    return { success: true, user: userData };
+  } catch (error: any) {
+    let errorMsg = 'Invalid email or password';
+    if (error.code === 'auth/user-not-found') errorMsg = 'User not found';
+    if (error.code === 'auth/wrong-password') errorMsg = 'Incorrect password';
+    if (error.code === 'auth/too-many-requests') errorMsg = 'Too many failed attempts. Please try again later.';
+    return { success: false, error: errorMsg };
   }
+};
 
-  return {
-    success: false,
-    error: 'Invalid email or password',
-  };
+export const registerUser = async (email: string, password: string, userData: Omit<User, 'email'>): Promise<LoginResponse> => {
+  try {
+    // Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userAuth = userCredential.user;
+    // Create user profile in Firestore
+    const userId = userAuth.uid || uuidv4();
+    const userProfile: User = {
+      email,
+      ...userData,
+    };
+    await setDoc(doc(db, 'users', userId), userProfile);
+    return { success: true, user: userProfile };
+  } catch (error: any) {
+    let errorMsg = 'Registration failed';
+    if (error.code === 'auth/email-already-in-use') errorMsg = 'Email already in use';
+    return { success: false, error: errorMsg };
+  }
 };
 
 export const setAuthToken = (token: string) => {

@@ -20,6 +20,7 @@ import UserManagement from './pages/user-management';
 import { rolePermissions as defaultRolePermissions, allPages } from './pages/user-management/user-management';
 import BugFeature from './pages/bug-feature';
 import Tutorials from './pages/tutorials';
+import Register from './pages/register/Register';
 
 const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
 
@@ -64,6 +65,7 @@ const AppRoutes = () => {
         ) : (
           <>
             <Route path="/login" element={<LoginForm onLogin={handleLogin} />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/introduction" element={<Introduction />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </>

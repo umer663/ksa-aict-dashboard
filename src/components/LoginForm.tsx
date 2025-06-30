@@ -75,32 +75,7 @@ const schema = yup.object().shape({
   password: yup
     .string()
     .required('Password is required')
-    .min(8, 'Password must be at least 8 characters')
-    .max(32, 'Password must not exceed 32 characters')
-    .matches(
-      /[A-Z]/,
-      'Password must contain at least one uppercase letter'
-    )
-    .matches(
-      /[a-z]/,
-      'Password must contain at least one lowercase letter'
-    )
-    .matches(
-      /[0-9]/,
-      'Password must contain at least one number'
-    )
-    .matches(
-      /[@$!%*?&#]/,
-      'Password must contain at least one special character (@$!%*?&#)'
-    )
-    .matches(
-      /^\S*$/,
-      'Password must not contain spaces'
-    )
-    .matches(
-      PASSWORD_REGEX,
-      'Password must not contain consecutive repeated characters'
-    ),
+    .min(6, 'Password must be at least 6 characters'),
 });
 
 /**
@@ -139,34 +114,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [overviewOpen, setOverviewOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Add at the top of the component, after useNavigate():
-  const quickLogins = [
-    { label: 'SuperAdmin', email: 'superadmin@example.com', password: 'Super@123' },
-    { label: 'Admin', email: 'admin@example.com', password: 'Admin@123' },
-    { label: 'Therapist', email: 'therapist@example.com', password: 'Therapist@123' },
-    { label: 'Receptionist', email: 'receptionist@example.com', password: 'Reception@123' },
-  ];
-
-  const handleQuickLogin = async (email: string, password: string) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const response = await loginUser(email, password);
-      if (response.success && response.user) {
-        setLoginAttempts(0);
-        setLockoutEndTime(null);
-        reset();
-        onLogin(response.user);
-      } else {
-        setError('Invalid credentials.');
-      }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   // Initialize form with validation and real-time feedback
   const {
     register,
@@ -178,6 +125,10 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     resolver: yupResolver(schema),
     mode: 'onChange',
     reValidateMode: 'onChange',
+    defaultValues: {
+      email: 'umarreactdev@gmail.com',
+      password: '123@Office'
+    },
   });
 
   // Clear form data on component unmount
@@ -374,20 +325,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </Alert>
         )}
 
-        <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {quickLogins.map((q) => (
-            <Button
-              key={q.label}
-              variant="outlined"
-              size="small"
-              onClick={() => handleQuickLogin(q.email, q.password)}
-              disabled={isSubmitting || isAccountLocked()}
-            >
-              {q.label} Quick Login
-            </Button>
-          ))}
-        </Box>
-
         <Box
           component="form"
           onSubmit={handleSubmit(onSubmit)}
@@ -473,7 +410,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             type="submit"
             fullWidth
             variant="contained"
-            disabled={isSubmitting || !isValid || !isDirty || isAccountLocked()}
+            disabled={isSubmitting || !isValid || isAccountLocked()}
             sx={{ 
               py: 1.5,
               mb: 2,
@@ -581,24 +518,6 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
               </Button>
             </DialogActions>
           </Dialog>
-
-          <Typography 
-            variant="body2" 
-            sx={{ 
-              textAlign: 'center',
-              color: 'text.secondary',
-            }}
-          >
-            Demo credentials:
-            <br />
-            SuperAdmin: superadmin@example.com / Super@123
-            <br />
-            Admin: admin@example.com / Admin@123
-            <br />
-            Therapist: therapist@example.com / Therapist@123
-            <br />
-            Receptionist: receptionist@example.com / Reception@123
-          </Typography>
         </Box>
       </Box>
     </Box>
