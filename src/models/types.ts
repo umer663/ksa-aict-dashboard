@@ -91,6 +91,7 @@ export interface PatientData {
   therapist_name: string;
   date_of_visit: string;
   last_modified?: string;
+  created_by?: string; // Email of the user who created the record
 }
 
 // Component Props interfaces

@@ -18,7 +18,7 @@ import {
   FormHelperText,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { PatientData } from '../models/types';
@@ -48,6 +48,7 @@ const PATTERNS = {
 
 const AddPatientForm = () => {
   const navigate = useNavigate();
+  const { user } = useOutletContext<{ user: { email: string } }>();
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [diseases, setDiseases] = useState<string[]>([]);
   const [newDisease, setNewDisease] = useState('');
@@ -399,6 +400,7 @@ const AddPatientForm = () => {
         follow_up_plans: cleanedFormData.follow_up_plans,
         therapist_name: cleanedFormData.therapist_name,
         date_of_visit: cleanedFormData.date_of_visit,
+        created_by: user?.email || '',
       };
 
       const existingPatients = JSON.parse(localStorage.getItem('patients') || '[]');

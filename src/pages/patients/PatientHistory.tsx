@@ -28,8 +28,10 @@ import EditPatientModal from '../../components/EditPatientModal';
 import PrintModal from '../../components/PrintModal';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
+import { useOutletContext } from 'react-router-dom';
 
 const PatientHistory = () => {
+  const { user } = useOutletContext<{ user: { email: string; role: string } }>();
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
@@ -49,8 +51,18 @@ const PatientHistory = () => {
 
   useEffect(() => {
     const storedPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-    setPatients(storedPatients);
-  }, []);
+    let filteredPatients = storedPatients;
+    if (user) {
+      if (user.role === 'SuperAdmin') {
+        filteredPatients = storedPatients;
+      } else if (user.role === 'Admin' || user.role === 'Therapist') {
+        filteredPatients = storedPatients.filter((p: PatientData) => p.created_by === user.email);
+      } else {
+        filteredPatients = [];
+      }
+    }
+    setPatients(filteredPatients);
+  }, [user]);
 
   const handleSaveEdit = async (updatedPatient: PatientData): Promise<void> => {
     try {

@@ -1,7 +1,9 @@
 import { Box, Typography } from '@mui/material';
 import AddPatientForm from '../../components/AddPatientForm';
+import { useOutletContext } from 'react-router-dom';
 
 const AddPatientHistory = () => {
+  const { user } = useOutletContext<{ user: any }>();
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
       <Typography
