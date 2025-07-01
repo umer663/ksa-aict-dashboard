@@ -22,13 +22,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 interface FormState {
   title: string;
   description: string;
-  attachment?: string;
 }
 
 const initialForm: FormState = {
   title: '',
   description: '',
-  attachment: '',
 };
 
 interface BugFeatureProps {
@@ -53,21 +51,6 @@ const BugFeature = ({ user }: BugFeatureProps) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        setError('Attachment must be less than 2MB.');
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm((prev) => ({ ...prev, attachment: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description) {
@@ -79,7 +62,8 @@ const BugFeature = ({ user }: BugFeatureProps) => {
     try {
       await addDoc(collection(db, 'bugFeatureReports'), {
         id: uuidv4(),
-        ...form,
+        title: form.title,
+        description: form.description,
         type: tab === 0 ? 'bug' : 'feature',
         createdAt: serverTimestamp(),
         createdBy: {
@@ -131,29 +115,6 @@ const BugFeature = ({ user }: BugFeatureProps) => {
               multiline
               rows={4}
             />
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                src={form.attachment}
-                sx={{ width: 56, height: 56, mr: 2 }}
-                variant="rounded"
-              />
-              <label htmlFor="attachment-upload">
-                <input
-                  accept="image/*"
-                  id="attachment-upload"
-                  type="file"
-                  style={{ display: 'none' }}
-                  onChange={handleImageChange}
-                />
-                <Button
-                  variant="outlined"
-                  component="span"
-                  startIcon={<PhotoCamera />}
-                >
-                  Upload Attachment
-                </Button>
-              </label>
-            </Box>
             <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={loading}>
               Submit {tab === 0 ? 'Bug' : 'Feature'}
               {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
