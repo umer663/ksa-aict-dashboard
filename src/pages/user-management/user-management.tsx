@@ -4,7 +4,7 @@ import { Edit, Block, CheckCircle, Cancel, PhotoCamera, Search } from '@mui/icon
 import { User, UserRole } from '../../models/types';
 import { fetchAllUsers, deleteUserByUid, registerUser, updateUser } from '../../services/authService';
 import { useAppConfig } from '../../context/AppConfigContext';
-import CircularProgress from '@mui/material/CircularProgress';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 interface NewUserForm {
   email: string;
@@ -215,9 +215,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   // In render, show loading spinner if config is loading
   if (!appConfig) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
-        <CircularProgress />
-      </Box>
+      <LoadingSpinner message="Loading configuration..." />
     );
   }
 
@@ -330,6 +328,10 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
       </Paper>
       <Paper sx={{ p: { xs: 2, sm: 4 } }}>
         <Typography variant="h6" gutterBottom>Existing Users</Typography>
+        {loading ? (
+          <LoadingSpinner message="Loading users..." />
+        ) : (
+        <>
         <Box sx={{ mt: 2, mb: 2 }}>
           <TextField
             placeholder="Search users by name or email"
@@ -383,7 +385,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                       sx={{ ml: 2 }}
                     />
                     {toggleLoadingUid === user.uid && (
-                      <CircularProgress size={20} sx={{ ml: 1 }} />
+                      <LoadingSpinner size={20} sx={{ ml: 1 }} />
                     )}
                   </Box>
                 </Box>
@@ -392,6 +394,8 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
             </div>
           ))}
         </List>
+        </>
+        )}
       </Paper>
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
         <DialogTitle>Edit User</DialogTitle>
