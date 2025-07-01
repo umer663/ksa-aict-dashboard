@@ -1,17 +1,36 @@
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Snackbar, Alert } from '@mui/material';
 import UserProfile from '../../components/UserProfile';
 import { useOutletContext } from 'react-router-dom';
 import { User } from '../../models/types';
+import { updateUser } from '../../services/authService';
+import { useState } from 'react';
 
 const Profile = () => {
   // Get the logged-in user from the outlet context (provided by DashboardLayout)
-  const { user } = useOutletContext<{ user: User }>();
+  const { user } = useOutletContext<{ user: User & { uid?: string } }>();
+
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   const userData = {
-    firstName: user.name || user.email.split('@')[0],
-    lastName: '',
+    firstName: user.name?.split(' ')[0] || user.email.split('@')[0],
+    lastName: user.name?.split(' ').slice(1).join(' ') || '',
     email: user.email,
     profileImage: user.profileImage || '',
+  };
+
+  const handleProfileUpdate = async (updatedData: any) => {
+    if (!user.uid) {
+      setSnackbar({ open: true, message: 'User ID not found. Cannot update profile.', severity: 'error' });
+      return;
+    }
+    try {
+      // Only update name and profileImage
+      const name = (updatedData.firstName + ' ' + updatedData.lastName).trim();
+      await updateUser(user.uid, { name, profileImage: updatedData.profileImage });
+      setSnackbar({ open: true, message: 'Profile updated successfully!', severity: 'success' });
+    } catch (error) {
+      setSnackbar({ open: true, message: 'Failed to update profile', severity: 'error' });
+    }
   };
 
   return (
@@ -27,7 +46,22 @@ const Profile = () => {
       >
         My Profile
       </Typography>
-      <UserProfile initialData={userData} />
+      <UserProfile initialData={userData} onProfileUpdate={handleProfileUpdate} />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

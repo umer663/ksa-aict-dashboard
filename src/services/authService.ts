@@ -47,7 +47,7 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     if (!userDoc.exists()) {
       return { success: false, error: 'User profile not found in database.' };
     }
-    const userData = userDoc.data() as User;
+    const userData = { ...userDoc.data(), uid: userAuth.uid } as User & { uid: string };
     if (userData.blocked) {
       return { success: false, error: 'Your account has been blocked. Please contact the administrator.' };
     }
