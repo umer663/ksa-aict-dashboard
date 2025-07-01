@@ -23,12 +23,12 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import PatientHistoryForm from '../../components/PatientHistoryForm';
-import EditPatientModal from '../../components/EditPatientModal';
+import PatientForm from '../../components/AddPatientForm';
 import PrintModal from '../../components/PrintModal';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
+import { fetchAllPatients } from '../../services/authService';
 
 const PatientHistory = () => {
   const { user } = useOutletContext<{ user: { email: string; role: string } }>();
@@ -50,18 +50,16 @@ const PatientHistory = () => {
   });
 
   useEffect(() => {
-    const storedPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-    let filteredPatients = storedPatients;
-    if (user) {
-      if (user.role === 'SuperAdmin') {
-        filteredPatients = storedPatients;
-      } else if (user.role === 'Admin' || user.role === 'Therapist') {
-        filteredPatients = storedPatients.filter((p: PatientData) => p.created_by === user.email);
-      } else {
-        filteredPatients = [];
+    const getPatients = async () => {
+      try {
+        const allPatients = await fetchAllPatients();
+        // Optionally filter by user role/email if needed
+        setPatients(allPatients);
+      } catch (error) {
+        setPatients([]);
       }
-    }
-    setPatients(filteredPatients);
+    };
+    getPatients();
   }, [user]);
 
   const handleSaveEdit = async (updatedPatient: PatientData): Promise<void> => {
@@ -70,7 +68,6 @@ const PatientHistory = () => {
         patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
       );
       setPatients(updatedPatients);
-      localStorage.setItem('patients', JSON.stringify(updatedPatients));
       
       // If the patient being viewed is the one being edited, update the view
       if (selectedPatient?.patient_id === updatedPatient.patient_id) {
@@ -95,16 +92,10 @@ const PatientHistory = () => {
     try {
       if (!patientToDelete) return;
 
-      // Get current patients from localStorage
-      const currentPatients = JSON.parse(localStorage.getItem('patients') || '[]');
-      
       // Filter out the patient to delete
-      const updatedPatients = currentPatients.filter(
+      const updatedPatients = patients.filter(
         (p: PatientData) => p.patient_id !== patientToDelete.patient_id
       );
-      
-      // Update localStorage
-      localStorage.setItem('patients', JSON.stringify(updatedPatients));
       
       // Update state
       setPatients(updatedPatients);
@@ -168,7 +159,7 @@ const PatientHistory = () => {
               Print Record
             </Button>
           </Box>
-          <PatientHistoryForm patientData={selectedPatient} />
+          <PatientForm patient={selectedPatient} mode="view" onSave={async () => {}} saving={false} />
         </>
       ) : (
         <Paper
@@ -200,16 +191,8 @@ const PatientHistory = () => {
                       primary={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Typography variant="subtitle1">
-                            {patient.personal_info.first_name} {patient.personal_info.last_name}
+                            {patient.personal_info?.first_name || 'Unknown'} {patient.personal_info?.last_name || ''}
                           </Typography>
-                          {patient.last_modified && (
-                            <Chip
-                              label="Edited"
-                              size="small"
-                              color="info"
-                              variant="outlined"
-                            />
-                          )}
                         </Box>
                       }
                       secondary={`Patient ID: ${patient.patient_id}`}
@@ -261,11 +244,14 @@ const PatientHistory = () => {
       )}
 
       {editingPatient && (
-        <EditPatientModal
-          open={Boolean(editingPatient)}
-          onClose={() => setEditingPatient(null)}
+        <PatientForm
           patient={editingPatient}
-          onSave={handleSaveEdit}
+          mode="edit"
+          onSave={async (updatedPatient) => {
+            await handleSaveEdit(updatedPatient);
+            setEditingPatient(null);
+          }}
+          saving={false}
         />
       )}
 

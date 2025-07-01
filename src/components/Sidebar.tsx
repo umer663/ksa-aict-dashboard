@@ -24,7 +24,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 import { User } from '../models/types';
-import { rolePermissions as defaultRolePermissions, allPages } from '../pages/user-management/user-management';
+import { useAppConfig } from '../context/AppConfigContext';
+import type { ReactElement } from 'react';
 
 const DRAWER_WIDTH = 240;
 
@@ -57,34 +58,47 @@ const StyledListItemButton = styled(ListItemButton)(({ theme }) => ({
   },
 }));
 
-const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'About', icon: <Info />, path: '/about' },
-  { text: 'Add Patient', icon: <PersonAdd />, path: '/add-patient' },
-  { text: 'Patient History', icon: <MedicalInformation />, path: '/patient-history' },
-  // { text: 'Topics', icon: <MenuBook />, path: '/topics' },
-  { text: 'Bug / Feature', icon: <BugReport />, path: '/bug-feature' },
-  { text: 'Profile', icon: <AccountCircle />, path: '/profile' },
-  { text: 'Contact', icon: <ContactMail />, path: '/contact' },
-  { text: 'Tutorials', icon: <MenuBook />, path: '/tutorials' },
-];
+const iconMap: Record<string, ReactElement> = {
+  dashboard: <DashboardIcon />,
+  about: <Info />,
+  'add-patient': <PersonAdd />,
+  'patient-history': <MedicalInformation />,
+  'bug-feature': <BugReport />,
+  profile: <AccountCircle />,
+  contact: <ContactMail />,
+  tutorials: <MenuBook />,
+  'user-management': <AccountCircle />,
+  topics: <MenuBook />,
+  home: <DashboardIcon />,
+};
 
 interface SidebarProps {
   user: User;
 }
 
-const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
-
 const Sidebar = ({ user }: SidebarProps) => {
+  const appConfig = useAppConfig();
+  const rolePermissions = appConfig?.rolePermissions || {};
+  const pages = appConfig?.pages || [];
+  const getUserPermissions = (user: User) => user.permissions || rolePermissions[user.role];
+
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
   const userPerms = getUserPermissions(user);
-  const filteredMenuItems = menuItems.filter(item => userPerms.includes(item.path.replace('/', '')));
-  // Add User Management menu item for SuperAdmin if allowed
-  if (userPerms.includes('user-management') && user.role === 'SuperAdmin') {
-    filteredMenuItems.push({ text: 'User Management', icon: <AccountCircle />, path: '/user-management' });
+  // Build menu items dynamically from config
+  let filteredMenuItems = pages
+    .filter(page => userPerms.includes(page.key))
+    .map(page => ({
+      text: page.label,
+      icon: iconMap[page.key] || <DashboardIcon />,
+      path: `/${page.key}`,
+      key: page.key,
+    }));
+  // Add User Management menu item for SuperAdmin if allowed and not already present
+  if (userPerms.includes('user-management') && user.role === 'SuperAdmin' && !filteredMenuItems.some(item => item.key === 'user-management')) {
+    filteredMenuItems.push({ text: 'User Management', icon: iconMap['user-management'], path: '/user-management', key: 'user-management' });
   }
 
   return (
@@ -101,7 +115,7 @@ const Sidebar = ({ user }: SidebarProps) => {
           },
         }}>
           {filteredMenuItems.map((item) => (
-            <ListItem key={item.text} disablePadding>
+            <ListItem key={item.key || item.text} disablePadding>
               <motion.div
                 style={{ width: '100%' }}
                 whileHover={{ scale: 1.02 }}

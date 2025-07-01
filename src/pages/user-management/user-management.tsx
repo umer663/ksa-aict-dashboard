@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, Paper, List, ListItem, ListItemText, Divider, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Avatar, Checkbox, FormGroup } from '@mui/material';
 import { Edit, Block, CheckCircle, Cancel, PhotoCamera, Search } from '@mui/icons-material';
 import { User, UserRole } from '../../models/types';
-
-const roles: UserRole[] = ['SuperAdmin', 'Admin', 'Therapist', 'Receptionist'];
+import { fetchAllUsers, deleteUserByUid, registerUser, updateUser } from '../../services/authService';
+import { useAppConfig } from '../../context/AppConfigContext';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface NewUserForm {
   email: string;
@@ -25,53 +26,68 @@ const initialForm: NewUserForm = {
   permissions: [],
 };
 
-const mockUsers: User[] = [
-  { email: 'superadmin@example.com', name: 'Super Admin', role: 'SuperAdmin', blocked: false },
-  { email: 'admin@example.com', name: 'Admin User', role: 'Admin', blocked: false },
-  { email: 'therapist@example.com', name: 'Therapist User', role: 'Therapist', blocked: false },
-  { email: 'receptionist@example.com', name: 'Receptionist User', role: 'Receptionist', blocked: false },
-];
+// Extend User type to include uid for Firestore document ID
+interface UserWithUid extends User {
+  uid?: string;
+}
 
-// Central permissions map
-const allPages = [
-  { key: 'dashboard', label: 'Dashboard' },
-  { key: 'topics', label: 'Topics' },
-  { key: 'add-patient', label: 'Add Patient' },
-  { key: 'patient-history', label: 'Patient History' },
-  { key: 'home', label: 'Home' },
-  { key: 'about', label: 'About' },
-  { key: 'contact', label: 'Contact' },
-  { key: 'profile', label: 'Profile' },
-  { key: 'bug-feature', label: 'Bug / Feature' },
-  { key: 'user-management', label: 'User Management' },
-  { key: 'tutorials', label: 'Tutorials' },
-];
-
-const rolePermissions: Record<UserRole, string[]> = {
-  SuperAdmin: allPages.map(p => p.key),
-  Admin: allPages.map(p => p.key),
-  Therapist: allPages.map(p => p.key),
-  Receptionist: [
-    'dashboard', 'contact', 'profile', 'about', 'bug-feature', 'tutorials'
-  ],
-};
-
-const UserManagement = () => {
+const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   const [form, setForm] = useState<NewUserForm>(initialForm);
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<UserWithUid[]>([]);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState<UserWithUid | null>(null);
   const [editForm, setEditForm] = useState<NewUserForm>(initialForm);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Get app config from context
+  const appConfig = useAppConfig();
+  const roles = appConfig?.roles || [];
+  const allPages = appConfig?.pages || [];
+  const rolePermissions = appConfig?.rolePermissions || {};
+  const allPagesWithAll = [{ key: 'all', label: 'All' }, ...allPages];
+
+  // Fetch users from Firestore
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const users = await fetchAllUsers();
+      setUsers(users);
+    } catch (err) {
+      setError('Failed to fetch users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    if (e.target.name === 'role') {
+      setForm((prev) => ({
+        ...prev,
+        role: e.target.value as UserRole,
+        permissions: rolePermissions[e.target.value as UserRole],
+      }));
+    } else {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    }
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    if (e.target.name === 'role') {
+      setEditForm((prev) => ({
+        ...prev,
+        role: e.target.value as UserRole,
+        permissions: rolePermissions[e.target.value as UserRole],
+      }));
+    } else {
+      setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +105,7 @@ const UserManagement = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.name || !form.password) {
       setError('All fields are required.');
@@ -101,10 +117,25 @@ const UserManagement = () => {
       setSuccess('');
       return;
     }
-    setUsers([...users, { email: form.email, name: form.name, role: form.role, blocked: false, profileImage: form.profileImage, permissions: form.permissions }]);
-    setSuccess('User created successfully!');
-    setError('');
-    setForm(initialForm);
+    try {
+      const response = await registerUser(form.email, form.password, {
+        name: form.name,
+        role: form.role,
+        blocked: form.blocked,
+        profileImage: form.profileImage,
+        permissions: form.permissions,
+      });
+      if (response.success) {
+        setSuccess('User created successfully!');
+        setError('');
+        setForm(initialForm);
+        loadUsers();
+      } else {
+        setError(response.error || 'Failed to create user');
+      }
+    } catch (err) {
+      setError('Failed to create user');
+    }
   };
 
   const handleEdit = (user: User) => {
@@ -121,17 +152,26 @@ const UserManagement = () => {
     setEditDialogOpen(true);
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUsers(users.map(u =>
-      u.email === editUser?.email
-        ? { ...u, email: editForm.email, name: editForm.name, role: editForm.role, blocked: editForm.blocked, profileImage: editForm.profileImage, permissions: editForm.permissions }
-        : u
-    ));
-    setEditDialogOpen(false);
-    setEditUser(null);
-    setSuccess('User updated successfully!');
-    setTimeout(() => setSuccess(''), 2000);
+    if (!editUser?.uid) return;
+    try {
+      await updateUser(editUser.uid, {
+        email: editForm.email,
+        name: editForm.name,
+        role: editForm.role,
+        blocked: editForm.blocked,
+        profileImage: editForm.profileImage,
+        permissions: editForm.permissions,
+      });
+      setEditDialogOpen(false);
+      setEditUser(null);
+      setSuccess('User updated successfully!');
+      setTimeout(() => setSuccess(''), 2000);
+      loadUsers();
+    } catch (err) {
+      setError('Failed to update user');
+    }
   };
 
   const handleBlockToggle = (user: User) => {
@@ -145,9 +185,34 @@ const UserManagement = () => {
   // Add this line to filter users based on search input
   const filteredUsers = users.filter(
     user =>
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
+      (user.name?.toLowerCase() || '').includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Add delete user handler
+  const handleDeleteUser = async (uid: string | undefined, email: string) => {
+    if (!uid) return;
+    if (email === currentUserEmail) {
+      setError("You cannot delete the user you are currently logged in as.");
+      return;
+    }
+    try {
+      await deleteUserByUid(uid);
+      setSuccess('User deleted successfully!');
+      loadUsers();
+    } catch (err) {
+      setError('Failed to delete user');
+    }
+  };
+
+  // In render, show loading spinner if config is loading
+  if (!appConfig) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
@@ -220,6 +285,39 @@ const UserManagement = () => {
               <MenuItem key={role} value={role}>{role}</MenuItem>
             ))}
           </TextField>
+          <FormGroup row sx={{ mb: 2 }}>
+            {allPagesWithAll.map((page) => (
+              <FormControlLabel
+                key={page.key}
+                control={
+                  <Checkbox
+                    checked={
+                      page.key === 'all'
+                        ? form.permissions?.length === allPages.length
+                        : form.permissions?.includes(page.key)
+                    }
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      if (page.key === 'all') {
+                        setForm((prev) => ({
+                          ...prev,
+                          permissions: checked ? allPages.map((p) => p.key) : [],
+                        }));
+                      } else {
+                        setForm((prev) => ({
+                          ...prev,
+                          permissions: checked
+                            ? [...(prev.permissions || []), page.key]
+                            : (prev.permissions || []).filter((perm) => perm !== page.key),
+                        }));
+                      }
+                    }}
+                  />
+                }
+                label={page.label}
+              />
+            ))}
+          </FormGroup>
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create User</Button>
         </form>
       </Paper>
@@ -244,6 +342,20 @@ const UserManagement = () => {
                     <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(user)}>
                       <Edit />
                     </IconButton>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      color="error"
+                      disabled={
+                        !user.email ||
+                        !currentUserEmail ||
+                        user.email.toLowerCase() === currentUserEmail.toLowerCase()
+                      }
+                      onClick={() => handleDeleteUser(user.uid, user.email)}
+                      sx={{ ml: 1 }}
+                    >
+                      <Cancel />
+                    </IconButton>
                     <FormControlLabel
                       control={
                         <Switch
@@ -260,7 +372,7 @@ const UserManagement = () => {
               >
                 <Avatar src={user.profileImage} sx={{ width: 32, height: 32, mr: 2 }} />
                 <ListItemText
-                  primary={user.name + (user.blocked ? ' (Blocked)' : '')}
+                  primary={(user.name || user.email) + (user.blocked ? ' (Blocked)' : '')}
                   secondary={`${user.email} — ${user.role}`}
                   sx={{ color: user.blocked ? 'text.disabled' : 'inherit' }}
                 />
@@ -339,21 +451,32 @@ const UserManagement = () => {
               sx={{ mt: 2 }}
             />
             <Typography variant="subtitle1" sx={{ mt: 2 }}>Page Access</Typography>
-            <FormGroup>
-              {allPages.map(page => (
+            <FormGroup row sx={{ mb: 2 }}>
+              {allPagesWithAll.map((page) => (
                 <FormControlLabel
                   key={page.key}
                   control={
                     <Checkbox
-                      checked={editForm.permissions?.includes(page.key) || false}
-                      onChange={e => {
+                      checked={
+                        page.key === 'all'
+                          ? editForm.permissions?.length === allPages.length
+                          : editForm.permissions?.includes(page.key)
+                      }
+                      onChange={(e) => {
                         const checked = e.target.checked;
-                        setEditForm(prev => ({
-                          ...prev,
-                          permissions: checked
-                            ? [...(prev.permissions || []), page.key]
-                            : (prev.permissions || []).filter(k => k !== page.key),
-                        }));
+                        if (page.key === 'all') {
+                          setEditForm((prev) => ({
+                            ...prev,
+                            permissions: checked ? allPages.map((p) => p.key) : [],
+                          }));
+                        } else {
+                          setEditForm((prev) => ({
+                            ...prev,
+                            permissions: checked
+                              ? [...(prev.permissions || []), page.key]
+                              : (prev.permissions || []).filter((perm) => perm !== page.key),
+                          }));
+                        }
                       }}
                     />
                   }
@@ -373,4 +496,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-export { rolePermissions, allPages };

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { User } from './models/types';
+import { useAppConfig } from './context/AppConfigContext';
 
 // Components
 import LoginForm from './components/LoginForm';
@@ -17,16 +18,16 @@ import Profile from './pages/profile';
 import Topics from './pages/topics';
 import Introduction from './pages/introduction';
 import UserManagement from './pages/user-management';
-import { rolePermissions as defaultRolePermissions, allPages } from './pages/user-management/user-management';
 import BugFeature from './pages/bug-feature';
 import Tutorials from './pages/tutorials';
 import Register from './pages/register/Register';
 
-const getUserPermissions = (user: User) => user.permissions || defaultRolePermissions[user.role];
-
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
+  const appConfig = useAppConfig();
+  const rolePermissions = appConfig?.rolePermissions || {};
+  const getUserPermissions = (user: User) => user.permissions || rolePermissions[user.role];
 
   const handleLogin = (user: User) => {
     setUser(user);
@@ -56,7 +57,7 @@ const AppRoutes = () => {
             {getUserPermissions(user).includes('contact') && <Route path="/contact" element={<Contact />} />}
             {getUserPermissions(user).includes('profile') && <Route path="/profile" element={<Profile />} />}
             {getUserPermissions(user).includes('user-management') && user.role === 'SuperAdmin' && (
-              <Route path="/user-management" element={<UserManagement />} />
+              <Route path="/user-management" element={<UserManagement currentUserEmail={user.email} />} />
             )}
             {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature />} />}
             {getUserPermissions(user).includes('tutorials') && <Route path="/tutorials" element={<Tutorials />} />}

@@ -1,0 +1,188 @@
+{
+  "patientId": "123e4567-e89b-12d3-a456-426614174000",      
+  "firstName": "John",                                      
+  "lastName": "Doe",                                        
+  "dateOfBirth": "1980-05-15",                               
+  "gender": "Male",                                         
+  "age": 25,                                                
+  "maritalStatus": "married",                               
+  "numberOfKids": 2,                                        
+  "bloodGroup": "A+",                                       
+  "occupation": "self employed",                            
+  "cnic": "12345-1234567-8",                                
+  "nationality": "Pakistani",                               
+
+  "contactInfo": {                                          
+    "phone": "+1234567890",                                 
+    "email": "john.doe@example.com",                        
+    "address": "123 Main St, Springfield, USA"              
+  },
+
+  "medicalHistory": [                                       
+    {
+      "conditionName": "Hypertension",                      
+      "diagnosisDate": "2015-03-10",                         
+      "status": "active",                                   
+      "notes": "Under control with medication"              
+    },
+    {
+      "conditionName": "Appendectomy",
+      "diagnosisDate": "2000-07-22",
+      "status": "resolved",
+      "notes": "Surgery successful, no complications"
+    }
+  ],
+
+  "medications": [                                          
+    {
+      "medicationName": "Lisinopril",                       
+      "dosage": "10 mg",                                    
+      "frequency": "once daily",                            
+      "startDate": "2015-03-15",                             
+      "endDate": null,                                      
+      "prescribingDoctor": "Dr. Smith"                      
+    },
+    {
+      "medicationName": "Ibuprofen",
+      "dosage": "200 mg",
+      "frequency": "as needed",
+      "startDate": "2024-06-01",
+      "endDate": "2024-06-10",
+      "prescribingDoctor": "Dr. Lee"
+    }
+  ],
+
+  "allergies": [                                            
+    {
+      "allergen": "Penicillin",                             
+      "reaction": "Rash",                                   
+      "severity": "mild"                                    
+    },
+    {
+      "allergen": "Peanuts",
+      "reaction": "Anaphylaxis",
+      "severity": "severe"
+    }
+  ],
+
+  "appointments": [                                         
+    {
+      "appointmentId": "apt-001",                           
+      "date": "2025-06-20T10:00:00Z",                        
+      "doctor": "Dr. Smith",                                
+      "department": "Cardiology",                           
+      "status": "completed",                                
+      "notes": "Routine check-up"                           
+    },
+    {
+      "appointmentId": "apt-002",
+      "date": "2025-07-10T14:30:00Z",
+      "doctor": "Dr. Lee",
+      "department": "Orthopedics",
+      "status": "scheduled",
+      "notes": ""
+    }
+  ],
+
+  "clinicalVisits": [                                       
+    {
+      "visitId": "visit-1001",                              
+      "date": "2025-06-20T10:00:00Z",                        
+      "doctor": "Dr. Smith",                                
+      "reason": "Routine blood pressure check",             
+      "observations": "BP 130/85, heart rate 72 bpm",       
+      "diagnoses": ["Hypertension"]                         
+    }
+  ],
+
+  "labResults": [                                           
+    {
+      "testName": "Complete Blood Count (CBC)",             
+      "testDate": "2025-06-18",                              
+
+      "result": {                                           
+        "WBC": "6.2",                                       
+        "RBC": "4.7",
+        "Hemoglobin": "14.0"
+      },
+
+      "units": {                                            
+        "WBC": "x10^3/uL",                                  
+        "RBC": "x10^6/uL",
+        "Hemoglobin": "g/dL"
+      },
+
+      "referenceRange": {                                   
+        "WBC": "4.0-11.0",                                  
+        "RBC": "4.2-5.9",
+        "Hemoglobin": "13.5-17.5"
+      },
+
+      "notes": "All values within normal range"             
+    }
+  ],
+
+  "imagingReports": [                                       
+    {
+      "imageType": "Chest X-ray",                           
+      "date": "2024-12-01",                                  
+      "report": "No abnormalities detected.",               
+      "imageLinks": [                                       
+        "https://hospital.example.com/images/patient123/chest-xray-20241201.jpg"
+      ]
+    }
+  ],
+
+  "immunizations": [                                        
+    {
+      "vaccineName": "Influenza",                           
+      "dateAdministered": "2024-10-15",                      
+      "dose": "0.5 ml",                                     
+      "provider": "Nurse Kelly"                             
+    },
+    {
+      "vaccineName": "COVID-19 Booster",
+      "dateAdministered": "2025-03-10",
+      "dose": "0.3 ml",
+      "provider": "Dr. Lee"
+    }
+  ],
+
+  "emergencyContacts": [                                    
+    {
+      "name": "Jane Doe",                                   
+      "relationship": "Spouse",                             
+      "phone": "+1234567891",                               
+      "address": "123 Main St, Springfield, USA"            
+    },
+    {
+      "name": "Mark Doe",
+      "relationship": "Brother",
+      "phone": "+1234567892"
+    }
+  ],
+
+  "insuranceDetails": {                                     
+    "providerName": "HealthCare Insurance Co.",             
+    "policyNumber": "HC123456789",                          
+    "coverageDetails": "Full coverage with co-pay",         
+    "validFrom": "2023-01-01",                               
+    "validTo": "2025-12-31"                                  
+  },
+
+  "notes": [                                                
+    {
+      "author": "Dr. Smith",                                
+      "date": "2025-06-20T11:00:00Z",                        
+      "content": "Patient advised to monitor blood pressure daily."  
+    },
+    {
+      "author": "Nurse Kelly",
+      "date": "2025-03-10T09:30:00Z",
+      "content": "Administered COVID-19 booster vaccine without complications."
+    }
+  ],
+
+  "createdAt": "2020-01-01T08:00:00Z",                       
+  "updatedAt": "2025-06-21T12:00:00Z"                        
+}
