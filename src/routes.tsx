@@ -59,7 +59,7 @@ const AppRoutes = () => {
             {getUserPermissions(user).includes('user-management') && user.role === 'SuperAdmin' && (
               <Route path="/user-management" element={<UserManagement currentUserEmail={user.email} />} />
             )}
-            {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature />} />}
+            {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature user={user} />} />}
             {getUserPermissions(user).includes('tutorials') && <Route path="/tutorials" element={<Tutorials />} />}
             <Route path="*" element={<Navigate to={`/${getUserPermissions(user)[0]}`} replace />} />
           </Route>

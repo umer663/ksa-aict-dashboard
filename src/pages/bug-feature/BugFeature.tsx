@@ -13,6 +13,11 @@ import {
 import BugReportIcon from '@mui/icons-material/BugReport';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
+import { db } from '../../services/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { User } from '../../models/types';
+import { v4 as uuidv4 } from 'uuid';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface FormState {
   title: string;
@@ -26,11 +31,16 @@ const initialForm: FormState = {
   attachment: '',
 };
 
-const BugFeature = () => {
+interface BugFeatureProps {
+  user: User;
+}
+
+const BugFeature = ({ user }: BugFeatureProps) => {
   const [tab, setTab] = useState(0);
   const [form, setForm] = useState<FormState>(initialForm);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleTabChange = (_: any, newValue: number) => {
     setTab(newValue);
@@ -58,16 +68,35 @@ const BugFeature = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description) {
       setError('All fields are required.');
       setSuccess('');
       return;
     }
-    setSuccess(`${tab === 0 ? 'Bug' : 'Feature'} submitted successfully!`);
-    setError('');
-    setForm(initialForm);
+    setLoading(true);
+    try {
+      await addDoc(collection(db, 'bugFeatureReports'), {
+        id: uuidv4(),
+        ...form,
+        type: tab === 0 ? 'bug' : 'feature',
+        createdAt: serverTimestamp(),
+        createdBy: {
+          userId: (user as any).uid || '',
+          email: user.email,
+          name: user.name || '',
+        },
+      });
+      setSuccess(`${tab === 0 ? 'Bug' : 'Feature'} submitted successfully!`);
+      setError('');
+      setForm(initialForm);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError('Failed to submit. Please try again.');
+      setSuccess('');
+    }
+    setLoading(false);
   };
 
   return (
@@ -125,8 +154,9 @@ const BugFeature = () => {
                 </Button>
               </label>
             </Box>
-            <Button type="submit" variant="contained" sx={{ mt: 2 }}>
+            <Button type="submit" variant="contained" sx={{ mt: 2 }} disabled={loading}>
               Submit {tab === 0 ? 'Bug' : 'Feature'}
+              {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
             </Button>
           </form>
         </Box>
