@@ -112,7 +112,7 @@ export const updateUser = async (uid: string, userData: Partial<User>) => {
 
 // Create a new patient in Firestore
 export const createPatient = async (patient: PatientData) => {
-  const patientId = patient.patient_id || uuidv4();
+  const patientId = uuidv4();
   await setDoc(doc(db, 'patients', patientId), { ...patient, patient_id: patientId });
   return patientId;
 };
@@ -127,4 +127,9 @@ export const fetchAllPatients = async (): Promise<PatientData[]> => {
   const patientsCol = collection(db, 'patients');
   const patientSnapshot = await getDocs(patientsCol);
   return patientSnapshot.docs.map(doc => ({ ...doc.data(), patient_id: doc.id }) as PatientData);
+};
+
+// Delete a patient by patient_id
+export const deletePatientById = async (patientId: string): Promise<void> => {
+  await deleteDoc(doc(db, 'patients', patientId));
 }; 

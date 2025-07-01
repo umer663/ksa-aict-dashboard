@@ -32,6 +32,7 @@ export interface PatientFormProps {
   saving?: boolean;
   error?: string;
   success?: string;
+  onClose?: () => void;
 }
 
 const defaultAddress: Address = {
@@ -69,27 +70,9 @@ const defaultPatient: PatientData = {
   patient_id: uuidv4(),
   personal_info: defaultPersonalInfo,
   medical_history: defaultMedicalHistory,
-  lifestyle: {
-    smoking: false,
-    alcohol_consumption: false,
-    exercise_frequency: '',
-    dietary_habits: '',
-  },
-  current_health_status: defaultCurrentHealthStatus,
-  doctor_notes: [],
-  presenting_complains: [],
-  history_of_presenting_complains: [],
-  family_medical_history: [],
-  diagnosis: [],
-  treatment_plan: [],
-  follow_up_plans: [],
-  therapist_name: '',
-  date_of_visit: '',
-  last_modified: '',
-  created_by: '',
 };
 
-const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = '', success = '' }: PatientFormProps) => {
+const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = '', success = '', onClose }: PatientFormProps) => {
   const [form, setForm] = useState<PatientData>(patient || defaultPatient);
 
   useEffect(() => {
@@ -140,7 +123,7 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
       first_name: 'Ali',
       last_name: 'Khan',
       date_of_birth: '1990-05-15',
-    gender: 'Male',
+      gender: 'Male',
       contact_number: '03001234567',
       email: 'ali.khan@email.com',
       address: {
@@ -158,30 +141,6 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
       allergies: ['Penicillin (Rash, Mild)'],
       family_medical_history: [],
     },
-    lifestyle: {
-      smoking: false,
-      alcohol_consumption: false,
-      exercise_frequency: '',
-      dietary_habits: '',
-    },
-    current_health_status: {
-      height_cm: 0,
-      weight_kg: 0,
-      blood_pressure: '',
-      heart_rate: 0,
-      current_symptoms: [],
-    },
-    doctor_notes: ['Patient is stable.'],
-    presenting_complains: [],
-    history_of_presenting_complains: [],
-    family_medical_history: [],
-    diagnosis: [],
-    treatment_plan: [],
-    follow_up_plans: [],
-    therapist_name: '',
-    date_of_visit: '',
-    last_modified: '',
-    created_by: '',
   };
 
   const handleFillSample = () => {
@@ -190,11 +149,20 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, mx: 'auto', mt: 4 }}>
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper sx={{ p: 3, mb: 4, position: 'relative' }}>
+        {mode === 'edit' && onClose && (
+          <Button
+            aria-label="Close Edit Patient"
+            onClick={onClose}
+            sx={{ position: 'absolute', top: 8, right: 8, minWidth: 0, padding: 0, fontSize: 24, lineHeight: 1 }}
+          >
+            &times;
+          </Button>
+        )}
         <Typography variant="h6" gutterBottom color="primary">
           {mode === 'add' ? 'Add New Patient' : mode === 'edit' ? 'Edit Patient' : 'Patient Details'}
         </Typography>
-        {mode !== 'view' && (
+        {mode === 'add' && (
         <Button variant="outlined" color="secondary" sx={{ mb: 2 }} onClick={handleFillSample}>
           Fill with Sample Data
         </Button>
@@ -319,33 +287,219 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
         </Grid>
         <Divider sx={{ my: 2 }} />
         <Typography variant="subtitle1">Medical History</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Medical History functionality here')}>Add Medical History</Button>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Chronic Diseases (one per line)"
+              value={form.medical_history.chronic_diseases.join('\n')}
+              onChange={e => setForm(prev => ({
+                ...prev,
+                medical_history: {
+                  ...prev.medical_history,
+                  chronic_diseases: e.target.value.split('\n'),
+                }
+              }))}
+              fullWidth
+              margin="normal"
+              multiline
+              minRows={2}
+              maxRows={6}
+              disabled={mode === 'view'}
+            />
+            {form.medical_history.chronic_diseases.length > 0 && (
+              <ul style={{ marginTop: 8 }}>
+                {form.medical_history.chronic_diseases.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Allergies (one per line)"
+              value={form.medical_history.allergies.join('\n')}
+              onChange={e => setForm(prev => ({
+                ...prev,
+                medical_history: {
+                  ...prev.medical_history,
+                  allergies: e.target.value.split('\n'),
+                }
+              }))}
+              fullWidth
+              margin="normal"
+              multiline
+              minRows={2}
+              maxRows={6}
+              disabled={mode === 'view'}
+            />
+            {form.medical_history.allergies.length > 0 && (
+              <ul style={{ marginTop: 8 }}>
+                {form.medical_history.allergies.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Family Medical History (one per line)"
+              value={form.medical_history.family_medical_history.join('\n')}
+              onChange={e => setForm(prev => ({
+                ...prev,
+                medical_history: {
+                  ...prev.medical_history,
+                  family_medical_history: e.target.value.split('\n'),
+                }
+              }))}
+              fullWidth
+              margin="normal"
+              multiline
+              minRows={6}
+              maxRows={10}
+              disabled={mode === 'view'}
+            />
+            {form.medical_history.family_medical_history.length > 0 && (
+              <ul style={{ marginTop: 8 }}>
+                {form.medical_history.family_medical_history.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            )}
+          </Grid>
+        </Grid>
+        {/* Previous Surgeries dynamic list */}
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Medications</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Medication functionality here')}>Add Medication</Button>
+        <Typography variant="subtitle2">Previous Surgeries</Typography>
+        {form.medical_history.previous_surgeries.map((surgery, idx) => (
+          <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 1 }}>
+            <TextField
+              label="Surgery Name"
+              value={surgery.surgery_name}
+              onChange={e => {
+                const updated = [...form.medical_history.previous_surgeries];
+                updated[idx] = { ...updated[idx], surgery_name: e.target.value };
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, previous_surgeries: updated }
+                }));
+              }}
+              size="small"
+              disabled={mode === 'view'}
+            />
+            <TextField
+              label="Surgery Date"
+              type="date"
+              value={surgery.surgery_date}
+              onChange={e => {
+                const updated = [...form.medical_history.previous_surgeries];
+                updated[idx] = { ...updated[idx], surgery_date: e.target.value };
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, previous_surgeries: updated }
+                }));
+              }}
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              disabled={mode === 'view'}
+            />
+            {mode !== 'view' && (
+              <Button color="error" onClick={() => {
+                const updated = form.medical_history.previous_surgeries.filter((_, i) => i !== idx);
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, previous_surgeries: updated }
+                }));
+              }}>Remove</Button>
+            )}
+          </Box>
+        ))}
+        {mode !== 'view' && (
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ mb: 2 }}
+            onClick={() => setForm(prev => ({
+              ...prev,
+              medical_history: {
+                ...prev.medical_history,
+                previous_surgeries: [...prev.medical_history.previous_surgeries, { surgery_name: '', surgery_date: '' }]
+              }
+            }))}
+          >Add Surgery</Button>
+        )}
+        {/* Medications dynamic list */}
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Allergies</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Allergy functionality here')}>Add Allergy</Button>
+        <Typography variant="subtitle2">Medications</Typography>
+        {form.medical_history.medications.map((med, idx) => (
+          <Box key={idx} sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 1 }}>
+            <TextField
+              label="Medication Name"
+              value={med.medication_name}
+              onChange={e => {
+                const updated = [...form.medical_history.medications];
+                updated[idx] = { ...updated[idx], medication_name: e.target.value };
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, medications: updated }
+                }));
+              }}
+              size="small"
+              disabled={mode === 'view'}
+            />
+            <TextField
+              label="Dosage"
+              value={med.dosage}
+              onChange={e => {
+                const updated = [...form.medical_history.medications];
+                updated[idx] = { ...updated[idx], dosage: e.target.value };
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, medications: updated }
+                }));
+              }}
+              size="small"
+              disabled={mode === 'view'}
+            />
+            <TextField
+              label="Frequency"
+              value={med.frequency}
+              onChange={e => {
+                const updated = [...form.medical_history.medications];
+                updated[idx] = { ...updated[idx], frequency: e.target.value };
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, medications: updated }
+                }));
+              }}
+              size="small"
+              disabled={mode === 'view'}
+            />
+            {mode !== 'view' && (
+              <Button color="error" onClick={() => {
+                const updated = form.medical_history.medications.filter((_, i) => i !== idx);
+                setForm(prev => ({
+                  ...prev,
+                  medical_history: { ...prev.medical_history, medications: updated }
+                }));
+              }}>Remove</Button>
+            )}
+          </Box>
+        ))}
+        {mode !== 'view' && (
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{ mb: 2 }}
+            onClick={() => setForm(prev => ({
+              ...prev,
+              medical_history: {
+                ...prev.medical_history,
+                medications: [...prev.medical_history.medications, { medication_name: '', dosage: '', frequency: '' }]
+              }
+            }))}
+          >Add Medication</Button>
+        )}
         <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Appointments</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Appointment functionality here')}>Add Appointment</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Clinical Visits</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Clinical Visit functionality here')}>Add Clinical Visit</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Lab Results</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Lab Result functionality here')}>Add Lab Result</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Imaging Reports</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Imaging Report functionality here')}>Add Imaging Report</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Immunizations</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Immunization functionality here')}>Add Immunization</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Emergency Contacts</Typography>
-        <Button variant="outlined" size="small" onClick={() => alert('Add Emergency Contact functionality here')}>Add Emergency Contact</Button>
-        <Divider sx={{ my: 2 }} />
-        <Typography variant="subtitle1">Insurance Details</Typography>
         {mode !== 'view' && (
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
           <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving}>

@@ -28,7 +28,7 @@ import PrintModal from '../../components/PrintModal';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
-import { fetchAllPatients } from '../../services/authService';
+import { fetchAllPatients, deletePatientById } from '../../services/authService';
 
 const PatientHistory = () => {
   const { user } = useOutletContext<{ user: { email: string; role: string } }>();
@@ -88,26 +88,23 @@ const PatientHistory = () => {
     setDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     try {
       if (!patientToDelete) return;
 
-      // Filter out the patient to delete
+      // Delete from Firestore
+      await deletePatientById(patientToDelete.patient_id);
+
+      // Filter out the patient to delete locally
       const updatedPatients = patients.filter(
         (p: PatientData) => p.patient_id !== patientToDelete.patient_id
       );
-      
-      // Update state
       setPatients(updatedPatients);
-      
-      // Show success message
       setSnackbar({
         open: true,
         message: 'Patient record deleted successfully',
         severity: 'success',
       });
-
-      // If the deleted patient was selected, clear the selection
       if (selectedPatient?.patient_id === patientToDelete.patient_id) {
         setSelectedPatient(null);
       }
@@ -252,6 +249,7 @@ const PatientHistory = () => {
             setEditingPatient(null);
           }}
           saving={false}
+          onClose={() => setEditingPatient(null)}
         />
       )}
 

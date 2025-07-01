@@ -1,4 +1,4 @@
-  // Address related interfaces
+// Address related interfaces
 export interface Address {
   street: string;
   city: string;
@@ -74,24 +74,6 @@ export interface PatientData {
   patient_id: string;
   personal_info: PersonalInfo;
   medical_history: MedicalHistory;
-  lifestyle: {
-    smoking: boolean;
-    alcohol_consumption: boolean;
-    exercise_frequency: string;
-    dietary_habits: string;
-  };
-  current_health_status: CurrentHealthStatus;
-  doctor_notes: string[];
-  presenting_complains: string[];
-  history_of_presenting_complains: string[];
-  family_medical_history: string[];
-  diagnosis: string[];
-  treatment_plan: string[];
-  follow_up_plans: string[];
-  therapist_name: string;
-  date_of_visit: string;
-  last_modified?: string;
-  created_by?: string; // Email of the user who created the record
 }
 
 // Component Props interfaces
