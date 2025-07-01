@@ -222,9 +222,9 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+    <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" gutterBottom>User Management</Typography>
-      <Paper sx={{ p: 3, mb: 4 }}>
+      <Paper sx={{ p: { xs: 2, sm: 4 }, mb: 4 }}>
         <Typography variant="h6" gutterBottom>Create New User</Typography>
         {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -328,7 +328,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
           <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create User</Button>
         </form>
       </Paper>
-      <Paper sx={{ p: 3 }}>
+      <Paper sx={{ p: { xs: 2, sm: 4 } }}>
         <Typography variant="h6" gutterBottom>Existing Users</Typography>
         <Box sx={{ mt: 2, mb: 2 }}>
           <TextField
@@ -343,9 +343,17 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
         <List>
           {filteredUsers.map((user, idx) => (
             <div key={user.email}>
-              <ListItem
-                secondaryAction={
-                  <>
+              <ListItem disableGutters>
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <Avatar src={user.profileImage} sx={{ width: 32, height: 32, mr: 2 }} />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <ListItemText
+                      primary={(user.name || user.email) + (user.blocked ? ' (Blocked)' : '')}
+                      secondary={`${user.email} — ${user.role}`}
+                      sx={{ color: user.blocked ? 'text.disabled' : 'inherit' }}
+                    />
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
                     <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(user)}>
                       <Edit />
                     </IconButton>
@@ -377,15 +385,8 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                     {toggleLoadingUid === user.uid && (
                       <CircularProgress size={20} sx={{ ml: 1 }} />
                     )}
-                  </>
-                }
-              >
-                <Avatar src={user.profileImage} sx={{ width: 32, height: 32, mr: 2 }} />
-                <ListItemText
-                  primary={(user.name || user.email) + (user.blocked ? ' (Blocked)' : '')}
-                  secondary={`${user.email} — ${user.role}`}
-                  sx={{ color: user.blocked ? 'text.disabled' : 'inherit' }}
-                />
+                  </Box>
+                </Box>
               </ListItem>
               {idx < filteredUsers.length - 1 && <Divider />}
             </div>
