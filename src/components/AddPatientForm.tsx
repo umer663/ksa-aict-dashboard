@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import {
   Box,
   Paper,
@@ -72,7 +72,7 @@ const defaultPatient: PatientData = {
   medical_history: defaultMedicalHistory,
 };
 
-const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = '', success = '', onClose }: PatientFormProps) => {
+const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mode = 'add', onSave, saving = false, error = '', success = '', onClose }, ref) => {
   const [form, setForm] = useState<PatientData>(patient || defaultPatient);
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
       first_name: 'Ali',
       last_name: 'Khan',
       date_of_birth: '1990-05-15',
-      gender: 'Male',
+    gender: 'Male',
       contact_number: '03001234567',
       email: 'ali.khan@email.com',
       address: {
@@ -148,7 +148,7 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, mx: 'auto', mt: 4 }}>
+    <Box ref={ref} component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, mx: 'auto', mt: 4 }}>
       <Paper sx={{ p: 3, mb: 4, position: 'relative' }}>
         {mode === 'edit' && onClose && (
           <Button
@@ -512,6 +512,6 @@ const PatientForm = ({ patient, mode = 'add', onSave, saving = false, error = ''
       </Paper>
     </Box>
   );
-};
+});
 
 export default PatientForm; 

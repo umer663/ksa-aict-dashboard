@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -14,6 +14,7 @@ import {
   Button,
   Snackbar,
   Alert,
+  Dialog,
 } from '@mui/material';
 import {
   Visibility,
@@ -24,18 +25,17 @@ import {
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import PatientForm from '../../components/AddPatientForm';
-import PrintModal from '../../components/PrintModal';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
 import { fetchAllPatients, deletePatientById } from '../../services/authService';
+import PatientPrintRecord from '../../components/PatientPrintRecord';
 
 const PatientHistory = () => {
   const { user } = useOutletContext<{ user: { email: string; role: string } }>();
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
-  const [printModalOpen, setPrintModalOpen] = useState(false);
   const [printingPatient, setPrintingPatient] = useState<PatientData | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<PatientData | null>(null);
@@ -48,6 +48,8 @@ const PatientHistory = () => {
     message: '',
     severity: 'success',
   });
+  const printRef = useRef<HTMLDivElement>(null);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
 
   useEffect(() => {
     const getPatients = async () => {
@@ -80,7 +82,7 @@ const PatientHistory = () => {
 
   const handlePrint = (patient: PatientData) => {
     setPrintingPatient(patient);
-    setPrintModalOpen(true);
+    setPrintDialogOpen(true);
   };
 
   const handleDeleteClick = (patient: PatientData) => {
@@ -254,14 +256,19 @@ const PatientHistory = () => {
       )}
 
       {printingPatient && (
-        <PrintModal
-          open={printModalOpen}
-          onClose={() => {
-            setPrintModalOpen(false);
-            setPrintingPatient(null);
-          }}
-          patient={printingPatient}
-        />
+        <Dialog open={printDialogOpen} onClose={() => setPrintDialogOpen(false)} maxWidth="md" fullWidth>
+          <Box sx={{ p: 2, bgcolor: 'white' }}>
+            <PatientPrintRecord patient={printingPatient} />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Button variant="contained" color="primary" onClick={() => {
+                setTimeout(() => {
+                  window.print();
+                }, 100);
+              }}>Print</Button>
+              <Button variant="outlined" sx={{ ml: 2 }} onClick={() => setPrintDialogOpen(false)}>Close</Button>
+            </Box>
+          </Box>
+        </Dialog>
       )}
 
       {/* Delete Confirmation Dialog */}
