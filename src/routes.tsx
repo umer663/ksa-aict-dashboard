@@ -15,7 +15,6 @@ import Contact from './pages/contact';
 import PatientHistory from './pages/patients/PatientHistory';
 import AddPatientHistory from './pages/patients/AddPatientHistory';
 import Profile from './pages/profile';
-import Topics from './pages/topics';
 import Introduction from './pages/introduction';
 import UserManagement from './pages/user-management';
 import BugFeature from './pages/bug-feature';
@@ -50,7 +49,6 @@ const AppRoutes = () => {
             }
           >
             {getUserPermissions(user).includes('dashboard') && <Route path="/dashboard" element={<Dashboard />} />}
-            {/* {getUserPermissions(user).includes('topics') && <Route path="/topics" element={<Topics />} />} */}
             {getUserPermissions(user).includes('add-patient') && <Route path="/add-patient" element={<AddPatientHistory />} />}
             {getUserPermissions(user).includes('patient-history') && <Route path="/patient-history" element={<PatientHistory />} />}
             {getUserPermissions(user).includes('about') && <Route path="/about" element={<About />} />}

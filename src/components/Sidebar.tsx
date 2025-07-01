@@ -68,7 +68,6 @@ const iconMap: Record<string, ReactElement> = {
   contact: <ContactMail />,
   tutorials: <MenuBook />,
   'user-management': <AccountCircle />,
-  topics: <MenuBook />,
 };
 
 interface SidebarProps {
@@ -88,7 +87,7 @@ const Sidebar = ({ user }: SidebarProps) => {
   const userPerms = getUserPermissions(user);
   // Build menu items dynamically from config
   let filteredMenuItems = pages
-    .filter(page => userPerms.includes(page.key))
+    .filter(page => userPerms.includes(page.key) && page.key !== 'topics')
     .map(page => ({
       text: page.label,
       icon: iconMap[page.key] || <DashboardIcon />,
