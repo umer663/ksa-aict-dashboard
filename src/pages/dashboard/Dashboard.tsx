@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Typography, Grid, Paper, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useEffect, useState } from 'react';
+import { fetchDashboardStats } from '../../services/statsService';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -30,6 +32,32 @@ const pageVariants = {
 };
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    totalUsers: 0,
+    totalTherapists: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDashboardStats()
+      .then((data) => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setError('Failed to load stats');
+        setLoading(false);
+      });
+  }, []);
+
+  const statItems = [
+    { label: 'Total Patients', value: stats.totalPatients },
+    { label: 'Total Users', value: stats.totalUsers },
+    { label: 'Total Therapist', value: stats.totalTherapists },
+  ];
+
   return (
     <motion.div
       initial="initial"
@@ -40,24 +68,30 @@ const Dashboard = () => {
       <Typography variant="h4" gutterBottom component="h1">
         Dashboard
       </Typography>
-      <Grid container spacing={3}>
-        {['Total Patients', 'Total Users', "Total Therapist"].map((item, index) => (
-          <Grid item xs={12} sm={6} md={3} key={item}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <StyledPaper elevation={3}>
-                <Typography variant="h6">{item}</Typography>
-                <Typography variant="h4" color="primary">
-                  {Math.floor(Math.random() * 1000)}
-                </Typography>
-              </StyledPaper>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
+      {loading ? (
+        <Typography>Loading stats...</Typography>
+      ) : error ? (
+        <Typography color="error">{error}</Typography>
+      ) : (
+        <Grid container spacing={3}>
+          {statItems.map((item, index) => (
+            <Grid item xs={12} sm={6} md={3} key={item.label}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <StyledPaper elevation={3}>
+                  <Typography variant="h6">{item.label}</Typography>
+                  <Typography variant="h4" color="primary">
+                    {item.value}
+                  </Typography>
+                </StyledPaper>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+      )}
     </motion.div>
   );
 };
