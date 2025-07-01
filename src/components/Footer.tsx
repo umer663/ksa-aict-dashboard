@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { styled } from '@mui/material/styles';
 
 // Constants for layout measurements
-const SIDEBAR_WIDTH = 280; // Match the drawer width from Navbar
+const SIDEBAR_WIDTH = 240; // Match the drawer width from Sidebar
 const FOOTER_HEIGHT = 30; // Reduced height further
 
 const currentYear = new Date().getFullYear();
