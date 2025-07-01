@@ -9,7 +9,6 @@ import {
 import {
   Phone,
   Email,
-  Home,
   LocationCity,
   Public,
 } from '@mui/icons-material';
@@ -33,7 +32,6 @@ const ContactInfoCard = ({ contactInfo }: ContactInfoCardProps) => {
           </Box>
           <Box>
             <Box display="flex" alignItems="center" gap={1} mb={1}>
-              <Home color="action" />
               <Typography>{contactInfo.address.street}</Typography>
             </Box>
             <Box display="flex" alignItems="center" gap={1} mb={1}>

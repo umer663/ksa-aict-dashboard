@@ -69,7 +69,6 @@ const iconMap: Record<string, ReactElement> = {
   tutorials: <MenuBook />,
   'user-management': <AccountCircle />,
   topics: <MenuBook />,
-  home: <DashboardIcon />,
 };
 
 interface SidebarProps {
