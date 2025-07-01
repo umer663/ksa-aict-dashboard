@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Typography, Grid, Paper, Box } from '@mui/material';
+import { Typography, Grid, Paper, Box, CircularProgress } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 import { fetchDashboardStats } from '../../services/statsService';
@@ -69,7 +69,9 @@ const Dashboard = () => {
         Dashboard
       </Typography>
       {loading ? (
-        <Typography>Loading stats...</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={120}>
+          <CircularProgress />
+        </Box>
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (

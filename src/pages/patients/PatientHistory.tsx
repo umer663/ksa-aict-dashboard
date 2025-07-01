@@ -15,6 +15,7 @@ import {
   Snackbar,
   Alert,
   Dialog,
+  CircularProgress,
 } from '@mui/material';
 import {
   Visibility,
@@ -50,17 +51,20 @@ const PatientHistory = () => {
   });
   const printRef = useRef<HTMLDivElement>(null);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getPatients = async () => {
       try {
         const allPatients = await fetchAllPatients();
-        // Optionally filter by user role/email if needed
         setPatients(allPatients);
       } catch (error) {
         setPatients([]);
+      } finally {
+        setLoading(false);
       }
     };
+    setLoading(true);
     getPatients();
   }, [user]);
 
@@ -168,77 +172,82 @@ const PatientHistory = () => {
           exit={{ opacity: 0, y: -20 }}
           sx={{ borderRadius: 2 }}
         >
-          <List>
-            {patients.length === 0 ? (
-              <ListItem>
-                <ListItemText
-                  primary={<Typography variant="body1" color="text.secondary">No data found.</Typography>}
-                />
-              </ListItem>
-            ) : (
-              patients.map((patient: PatientData, index: number) => (
-                <motion.div
-                  key={patient.patient_id}
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {index > 0 && <Divider />}
-                  <ListItem>
-                    <ListItemText
-                      primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="subtitle1">
-                            {patient.personal_info?.first_name || 'Unknown'} {patient.personal_info?.last_name || ''}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={`Patient ID: ${patient.patient_id}`}
-                    />
-                    <ListItemSecondaryAction>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          edge="end"
-                          onClick={() => setSelectedPatient(patient)}
-                          sx={{ mr: 1 }}
-                        >
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Print Record">
-                        <IconButton
-                          edge="end"
-                          onClick={() => handlePrint(patient)}
-                          sx={{ mr: 1 }}
-                        >
-                          <PrintIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit Patient">
-                        <IconButton
-                          edge="end"
-                          onClick={() => setEditingPatient(patient)}
-                          sx={{ mr: 1 }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Patient">
-                        <IconButton
-                          edge="end"
-                          onClick={() => handleDeleteClick(patient)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                </motion.div>
-              ))
-            )}
-          </List>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <List>
+              {patients.length === 0 ? (
+                <ListItem>
+                  <ListItemText
+                    primary={<Typography variant="body1" color="text.secondary">No data found.</Typography>}
+                  />
+                </ListItem>
+              ) : (
+                patients.map((patient: PatientData, index: number) => (
+                  <motion.div
+                    key={patient.patient_id}
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    {index > 0 && <Divider />}
+                    <ListItem>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle1">
+                              {patient.personal_info?.first_name || 'Unknown'} {patient.personal_info?.last_name || ''}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                      <ListItemSecondaryAction>
+                        <Tooltip title="View Details">
+                          <IconButton
+                            edge="end"
+                            onClick={() => setSelectedPatient(patient)}
+                            sx={{ mr: 1 }}
+                          >
+                            <Visibility />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Print Record">
+                          <IconButton
+                            edge="end"
+                            onClick={() => handlePrint(patient)}
+                            sx={{ mr: 1 }}
+                          >
+                            <PrintIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Edit Patient">
+                          <IconButton
+                            edge="end"
+                            onClick={() => setEditingPatient(patient)}
+                            sx={{ mr: 1 }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete Patient">
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleDeleteClick(patient)}
+                            color="error"
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  </motion.div>
+                ))
+              )}
+            </List>
+          )}
         </Paper>
       )}
 
