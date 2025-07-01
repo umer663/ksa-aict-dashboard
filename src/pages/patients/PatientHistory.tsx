@@ -16,6 +16,7 @@ import {
   Alert,
   Dialog,
   CircularProgress,
+  TextField,
 } from '@mui/material';
 import {
   Visibility,
@@ -52,6 +53,7 @@ const PatientHistory = () => {
   const printRef = useRef<HTMLDivElement>(null);
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const getPatients = async () => {
@@ -130,6 +132,15 @@ const PatientHistory = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const filteredPatients = patients.filter((patient) => {
+    const name = `${patient.personal_info?.first_name || ''} ${patient.personal_info?.last_name || ''}`.toLowerCase();
+    const id = patient.patient_id?.toLowerCase() || '';
+    return (
+      name.includes(search.toLowerCase()) ||
+      id.includes(search.toLowerCase())
+    );
+  });
+
   return (
     <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
       <Typography
@@ -143,6 +154,17 @@ const PatientHistory = () => {
       >
         Patient History
       </Typography>
+
+      <Box sx={{ mb: 3, maxWidth: 400 }}>
+        <TextField
+          fullWidth
+          size="small"
+          variant="outlined"
+          placeholder="Search by name or patient ID"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </Box>
 
       {selectedPatient ? (
         <>
@@ -178,14 +200,14 @@ const PatientHistory = () => {
             </Box>
           ) : (
             <List>
-              {patients.length === 0 ? (
+              {filteredPatients.length === 0 ? (
                 <ListItem>
                   <ListItemText
                     primary={<Typography variant="body1" color="text.secondary">No data found.</Typography>}
                   />
                 </ListItem>
               ) : (
-                patients.map((patient: PatientData, index: number) => (
+                filteredPatients.map((patient: PatientData, index: number) => (
                   <motion.div
                     key={patient.patient_id}
                     layout
