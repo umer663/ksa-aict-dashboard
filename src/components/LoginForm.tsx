@@ -189,13 +189,15 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
         const newAttempts = loginAttempts + 1;
         setLoginAttempts(newAttempts);
 
-        if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+        if (response.error && response.error.toLowerCase().includes('blocked')) {
+          setError('Your account has been blocked. Please contact the administrator.');
+        } else if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
           const lockoutEnd = new Date();
           lockoutEnd.setMinutes(lockoutEnd.getMinutes() + LOCKOUT_DURATION);
           setLockoutEndTime(lockoutEnd);
           setError(`Too many failed attempts. Account locked for ${LOCKOUT_DURATION} minutes.`);
         } else {
-          setError(`Invalid credentials. ${MAX_LOGIN_ATTEMPTS - newAttempts} attempts remaining.`);
+          setError('Invalid credentials.');
         }
       }
     } catch (error) {

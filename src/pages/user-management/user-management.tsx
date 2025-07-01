@@ -41,6 +41,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
+  const [toggleLoadingUid, setToggleLoadingUid] = useState<string | null>(null);
 
   // Get app config from context
   const appConfig = useAppConfig();
@@ -174,12 +175,18 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
     }
   };
 
-  const handleBlockToggle = (user: User) => {
-    setUsers(users.map(u =>
-      u.email === user.email ? { ...u, blocked: !u.blocked } : u
-    ));
-    setSuccess(user.blocked ? 'User unblocked.' : 'User blocked.');
-    setTimeout(() => setSuccess(''), 2000);
+  const handleBlockToggle = async (user: UserWithUid) => {
+    if (!user.uid) return;
+    setToggleLoadingUid(user.uid);
+    try {
+      await updateUser(user.uid, { blocked: !user.blocked });
+      setSuccess(!user.blocked ? 'User blocked.' : 'User unblocked.');
+      setTimeout(() => setSuccess(''), 2000);
+      await loadUsers();
+    } catch (err) {
+      setError('Failed to update user status');
+    }
+    setToggleLoadingUid(null);
   };
 
   // Add this line to filter users based on search input
@@ -361,12 +368,15 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                         <Switch
                           checked={!user.blocked}
                           onChange={() => handleBlockToggle(user)}
-                          color="success"
+                          disabled={user.email.toLowerCase() === currentUserEmail.toLowerCase() || toggleLoadingUid === user.uid}
                         />
                       }
                       label={user.blocked ? 'Blocked' : 'Active'}
                       sx={{ ml: 2 }}
                     />
+                    {toggleLoadingUid === user.uid && (
+                      <CircularProgress size={20} sx={{ ml: 1 }} />
+                    )}
                   </>
                 }
               >
