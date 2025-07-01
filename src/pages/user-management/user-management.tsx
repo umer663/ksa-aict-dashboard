@@ -232,7 +232,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
               src={form.profileImage}
               sx={{ width: 56, height: 56, mr: 2 }}
             />
-            <label htmlFor="profile-image-upload">
+            {/* <label htmlFor="profile-image-upload">
               <input
                 accept="image/*"
                 id="profile-image-upload"
@@ -247,7 +247,7 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
               >
                 Upload
               </Button>
-            </label>
+            </label> */}
           </Box>
           <TextField
             label="Email"
@@ -414,13 +414,13 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                   style={{ display: 'none' }}
                   onChange={handleImageChange}
                 />
-                <Button
+                {/* <Button
                   variant="outlined"
                   component="span"
                   startIcon={<PhotoCamera />}
                 >
                   Upload
-                </Button>
+                </Button> */}
               </label>
             </Box>
             <TextField

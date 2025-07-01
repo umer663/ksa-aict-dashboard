@@ -176,9 +176,9 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
                 onChange={handleImageUpload}
                 ref={fileInputRef}
               />
-              <ImageUploadButton htmlFor="profile-image-upload">
+              {/* <ImageUploadButton htmlFor="profile-image-upload">
                 <PhotoCamera sx={{ fontSize: 20 }} />
-              </ImageUploadButton>
+              </ImageUploadButton> */}
             </>
           )}
         </Box>
