@@ -78,24 +78,33 @@ const Sidebar = ({ user }: SidebarProps) => {
   const appConfig = useAppConfig();
   const rolePermissions = appConfig?.rolePermissions || {};
   const pages = appConfig?.pages || [];
-  const getUserPermissions = (user: User) => user.permissions || rolePermissions[user.role];
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
 
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const userPerms = getUserPermissions(user);
   // Build menu items dynamically from config
-  let filteredMenuItems = pages
-    .filter(page => userPerms.includes(page.key) && page.key !== 'topics')
-    .map(page => ({
+  let filteredMenuItems = [];
+  if (nonRemoveableUsers.includes(user.email)) {
+    filteredMenuItems = pages.map(page => ({
       text: page.label,
       icon: iconMap[page.key] || <DashboardIcon />,
       path: `/${page.key}`,
       key: page.key,
     }));
+  } else {
+    filteredMenuItems = pages
+      .filter(page => user.permissions?.[page.key as string]?.view === true && page.key !== 'topics')
+      .map(page => ({
+        text: page.label,
+        icon: iconMap[page.key] || <DashboardIcon />,
+        path: `/${page.key}`,
+        key: page.key,
+      }));
+  }
   // Add User Management menu item for SuperAdmin if allowed and not already present
-  if (userPerms.includes('user-management') && user.role === 'SuperAdmin' && !filteredMenuItems.some(item => item.key === 'user-management')) {
+  if ((user.permissions?.['user-management' as string]?.view === true || nonRemoveableUsers.includes(user.email)) && !filteredMenuItems.some(item => item.key === 'user-management')) {
     filteredMenuItems.push({ text: 'User Management', icon: iconMap['user-management'], path: '/user-management', key: 'user-management' });
   }
 

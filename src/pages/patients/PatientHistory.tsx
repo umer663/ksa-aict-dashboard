@@ -32,9 +32,15 @@ import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
 import { fetchAllPatients, deletePatientById } from '../../services/authService';
 import PatientPrintRecord from '../../components/PatientPrintRecord';
+import { useAppConfig } from '../../context/AppConfigContext';
 
 const PatientHistory = () => {
-  const { user } = useOutletContext<{ user: { email: string; role: string } }>();
+  const { user } = useOutletContext<{ user: any }>();
+  const appConfig = useAppConfig();
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
+  const isNonRemoveable = nonRemoveableUsers.includes(user.email);
+  const canEdit = isNonRemoveable || user?.permissions?.['patient-history']?.update === true;
+  const canDelete = isNonRemoveable || user?.permissions?.['patient-history']?.delete === true;
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
@@ -245,24 +251,28 @@ const PatientHistory = () => {
                             <PrintIcon />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="Edit Patient">
-                          <IconButton
-                            edge="end"
-                            onClick={() => setEditingPatient(patient)}
-                            sx={{ mr: 1 }}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete Patient">
-                          <IconButton
-                            edge="end"
-                            onClick={() => handleDeleteClick(patient)}
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
+                        {canEdit && (
+                          <Tooltip title="Edit Patient">
+                            <IconButton
+                              edge="end"
+                              onClick={() => setEditingPatient(patient)}
+                              sx={{ mr: 1 }}
+                            >
+                              <EditIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {canDelete && (
+                          <Tooltip title="Delete Patient">
+                            <IconButton
+                              edge="end"
+                              onClick={() => handleDeleteClick(patient)}
+                              color="error"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </ListItemSecondaryAction>
                     </ListItem>
                   </motion.div>

@@ -26,7 +26,17 @@ const AppRoutes = () => {
   const location = useLocation();
   const appConfig = useAppConfig();
   const rolePermissions = appConfig?.rolePermissions || {};
-  const getUserPermissions = (user: User) => user.permissions || rolePermissions[user.role];
+  const pages = appConfig?.pages || [];
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
+  const getUserPermissions = (user: User) => {
+    if (nonRemoveableUsers.includes(user.email)) {
+      return pages.map((p) => p.key);
+    }
+    if (user.permissions && typeof user.permissions === 'object') {
+      return pages.filter(page => user.permissions?.[page.key]?.view === true).map(page => page.key);
+    }
+    return [];
+  };
 
   const handleLogin = (user: User) => {
     setUser(user);
@@ -48,18 +58,18 @@ const AppRoutes = () => {
               />
             }
           >
-            {getUserPermissions(user).includes('dashboard') && <Route path="/dashboard" element={<Dashboard />} />}
-            {getUserPermissions(user).includes('add-patient') && <Route path="/add-patient" element={<AddPatientHistory />} />}
-            {getUserPermissions(user).includes('patient-history') && <Route path="/patient-history" element={<PatientHistory />} />}
-            {getUserPermissions(user).includes('about') && <Route path="/about" element={<About />} />}
-            {getUserPermissions(user).includes('contact') && <Route path="/contact" element={<Contact />} />}
-            {getUserPermissions(user).includes('profile') && <Route path="/profile" element={<Profile />} />}
-            {getUserPermissions(user).includes('user-management') && user.role === 'SuperAdmin' && (
-              <Route path="/user-management" element={<UserManagement currentUserEmail={user.email} />} />
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['dashboard' as string]?.view === true) && <Route path="/dashboard" element={<Dashboard />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['add-patient' as string]?.view === true) && <Route path="/add-patient" element={<AddPatientHistory />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['patient-history' as string]?.view === true) && <Route path="/patient-history" element={<PatientHistory />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['about' as string]?.view === true) && <Route path="/about" element={<About />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['contact' as string]?.view === true) && <Route path="/contact" element={<Contact />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['profile' as string]?.view === true) && <Route path="/profile" element={<Profile />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['user-management' as string]?.view === true) && (
+              <Route path="/user-management" element={<UserManagement currentUser={user} />} />
             )}
-            {getUserPermissions(user).includes('bug-feature') && <Route path="/bug-feature" element={<BugFeature user={user} />} />}
-            {getUserPermissions(user).includes('tutorials') && <Route path="/tutorials" element={<Tutorials />} />}
-            <Route path="*" element={<Navigate to={`/${getUserPermissions(user)[0]}`} replace />} />
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['bug-feature' as string]?.view === true) && <Route path="/bug-feature" element={<BugFeature user={user} />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['tutorials' as string]?.view === true) && <Route path="/tutorials" element={<Tutorials />} />}
+            <Route path="*" element={<Navigate to={`/${(nonRemoveableUsers.includes(user.email) ? pages[0]?.key : Object.keys(user.permissions || {}).find(key => user.permissions?.[key as string]?.view))}`} replace />} />
           </Route>
         ) : (
           <>

@@ -6,6 +6,15 @@ import { fetchAllUsers, deleteUserByUid, registerUser, updateUser } from '../../
 import { useAppConfig } from '../../context/AppConfigContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
+interface PermissionsObject {
+  [pageKey: string]: {
+    view?: boolean;
+    create?: boolean;
+    update?: boolean;
+    delete?: boolean;
+  };
+}
+
 interface NewUserForm {
   email: string;
   name: string;
@@ -13,7 +22,7 @@ interface NewUserForm {
   role: UserRole;
   blocked?: boolean;
   profileImage?: string;
-  permissions?: string[];
+  permissions?: PermissionsObject;
 }
 
 const initialForm: NewUserForm = {
@@ -23,7 +32,7 @@ const initialForm: NewUserForm = {
   role: 'Admin',
   blocked: false,
   profileImage: '',
-  permissions: [],
+  permissions: {},
 };
 
 // Extend User type to include uid for Firestore document ID
@@ -31,7 +40,10 @@ interface UserWithUid extends User {
   uid?: string;
 }
 
-const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
+const ACTIONS = ['view', 'create', 'update', 'delete'] as const;
+type Action = typeof ACTIONS[number];
+
+const UserManagement = ({ currentUser }: { currentUser: User }) => {
   const [form, setForm] = useState<NewUserForm>(initialForm);
   const [users, setUsers] = useState<UserWithUid[]>([]);
   const [success, setSuccess] = useState('');
@@ -45,10 +57,17 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
 
   // Get app config from context
   const appConfig = useAppConfig();
-  const roles = appConfig?.roles || [];
   const allPages = appConfig?.pages || [];
   const rolePermissions = appConfig?.rolePermissions || {};
-  const allPagesWithAll = [{ key: 'all', label: 'All' }, ...allPages];
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
+  const defaultRole = appConfig?.defaultRole || '';
+  const defaultPermissions = appConfig?.defaultPermissions || [];
+
+  // Add permission checks:
+  const isNonRemoveable = nonRemoveableUsers.includes(currentUser.email);
+  const canCreate = isNonRemoveable || currentUser?.permissions?.['user-management']?.create === true;
+  const canUpdate = isNonRemoveable || currentUser?.permissions?.['user-management']?.update === true;
+  const canDelete = isNonRemoveable || currentUser?.permissions?.['user-management']?.delete === true;
 
   // Fetch users from Firestore
   const loadUsers = async () => {
@@ -68,27 +87,11 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.name === 'role') {
-      setForm((prev) => ({
-        ...prev,
-        role: e.target.value as UserRole,
-        permissions: rolePermissions[e.target.value as UserRole],
-      }));
-    } else {
-      setForm({ ...form, [e.target.name]: e.target.value });
-    }
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.name === 'role') {
-      setEditForm((prev) => ({
-        ...prev,
-        role: e.target.value as UserRole,
-        permissions: rolePermissions[e.target.value as UserRole],
-      }));
-    } else {
-      setEditForm({ ...editForm, [e.target.name]: e.target.value });
-    }
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,12 +122,22 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
       return;
     }
     try {
+      // Ensure defaultPermissions is an object
+      let permissionsObj: PermissionsObject = {};
+      if (Array.isArray(defaultPermissions)) {
+        // Convert array to object with all actions true
+        defaultPermissions.forEach((key: string) => {
+          permissionsObj[key] = { view: true, create: true, update: true, delete: true };
+        });
+      } else if (typeof defaultPermissions === 'object' && defaultPermissions !== null) {
+        permissionsObj = defaultPermissions;
+      }
       const response = await registerUser(form.email, form.password, {
         name: form.name,
-        role: form.role,
+        role: defaultRole as UserRole,
         blocked: form.blocked,
         profileImage: form.profileImage,
-        permissions: form.permissions,
+        permissions: permissionsObj,
       });
       if (response.success) {
         setSuccess('User created successfully!');
@@ -199,8 +212,12 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   // Add delete user handler
   const handleDeleteUser = async (uid: string | undefined, email: string) => {
     if (!uid) return;
-    if (email === currentUserEmail) {
+    if (email === currentUser.email) {
       setError("You cannot delete the user you are currently logged in as.");
+      return;
+    }
+    if (nonRemoveableUsers.includes(email)) {
+      setError("This user cannot be deleted (non-removeable user).");
       return;
     }
     try {
@@ -222,110 +239,66 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
       <Typography variant="h4" gutterBottom>User Management</Typography>
-      <Paper sx={{ p: { xs: 2, sm: 4 }, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>Create New User</Typography>
-        {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Avatar
-              src={form.profileImage}
-              sx={{ width: 56, height: 56, mr: 2 }}
+      {canCreate && (
+        <Paper sx={{ p: { xs: 2, sm: 4 }, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>Create New User</Typography>
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Avatar
+                src={form.profileImage}
+                sx={{ width: 56, height: 56, mr: 2 }}
+              />
+              {/* <label htmlFor="profile-image-upload">
+                <input
+                  accept="image/*"
+                  id="profile-image-upload"
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<PhotoCamera />}
+                >
+                  Upload
+                </Button>
+              </label> */}
+            </Box>
+            <TextField
+              label="Email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
             />
-            {/* <label htmlFor="profile-image-upload">
-              <input
-                accept="image/*"
-                id="profile-image-upload"
-                type="file"
-                style={{ display: 'none' }}
-                onChange={handleImageChange}
-              />
-              <Button
-                variant="outlined"
-                component="span"
-                startIcon={<PhotoCamera />}
-              >
-                Upload
-              </Button>
-            </label> */}
-          </Box>
-          <TextField
-            label="Email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Name"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            label="Password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            required
-          />
-          <TextField
-            select
-            label="Role"
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-          >
-            {roles.map((role) => (
-              <MenuItem key={role} value={role}>{role}</MenuItem>
-            ))}
-          </TextField>
-          <FormGroup row sx={{ mb: 2 }}>
-            {allPagesWithAll.map((page) => (
-              <FormControlLabel
-                key={page.key}
-                control={
-                  <Checkbox
-                    checked={
-                      page.key === 'all'
-                        ? form.permissions?.length === allPages.length
-                        : form.permissions?.includes(page.key)
-                    }
-                    onChange={(e) => {
-                      const checked = e.target.checked;
-                      if (page.key === 'all') {
-                        setForm((prev) => ({
-                          ...prev,
-                          permissions: checked ? allPages.map((p) => p.key) : [],
-                        }));
-                      } else {
-                        setForm((prev) => ({
-                          ...prev,
-                          permissions: checked
-                            ? [...(prev.permissions || []), page.key]
-                            : (prev.permissions || []).filter((perm) => perm !== page.key),
-                        }));
-                      }
-                    }}
-                  />
-                }
-                label={page.label}
-              />
-            ))}
-          </FormGroup>
-          <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create User</Button>
-        </form>
-      </Paper>
+            <TextField
+              label="Name"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              label="Password"
+              name="password"
+              type="password"
+              value={form.password}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create User</Button>
+          </form>
+        </Paper>
+      )}
       <Paper sx={{ p: { xs: 2, sm: 4 } }}>
         <Typography variant="h6" gutterBottom>Existing Users</Typography>
         {loading ? (
@@ -365,8 +338,9 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                       color="error"
                       disabled={
                         !user.email ||
-                        !currentUserEmail ||
-                        user.email.toLowerCase() === currentUserEmail.toLowerCase()
+                        !currentUser.email ||
+                        user.email.toLowerCase() === currentUser.email.toLowerCase() ||
+                        nonRemoveableUsers.includes(user.email)
                       }
                       onClick={() => handleDeleteUser(user.uid, user.email)}
                       sx={{ ml: 1 }}
@@ -378,14 +352,14 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
                         <Switch
                           checked={!user.blocked}
                           onChange={() => handleBlockToggle(user)}
-                          disabled={user.email.toLowerCase() === currentUserEmail.toLowerCase() || toggleLoadingUid === user.uid}
+                          disabled={user.email.toLowerCase() === currentUser.email.toLowerCase() || toggleLoadingUid === user.uid || !canUpdate}
                         />
                       }
                       label={user.blocked ? 'Blocked' : 'Active'}
                       sx={{ ml: 2 }}
                     />
                     {toggleLoadingUid === user.uid && (
-                      <LoadingSpinner size={20} sx={{ ml: 1 }} />
+                      <Box sx={{ ml: 1 }}><LoadingSpinner size={20} /></Box>
                     )}
                   </Box>
                 </Box>
@@ -441,19 +415,6 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
               margin="normal"
               required
             />
-            <TextField
-              select
-              label="Role"
-              name="role"
-              value={editForm.role}
-              onChange={handleEditChange}
-              fullWidth
-              margin="normal"
-            >
-              {roles.map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
-              ))}
-            </TextField>
             <FormControlLabel
               control={
                 <Switch
@@ -465,40 +426,43 @@ const UserManagement = ({ currentUserEmail }: { currentUserEmail: string }) => {
               label={editForm.blocked ? 'Blocked' : 'Active'}
               sx={{ mt: 2 }}
             />
-            <Typography variant="subtitle1" sx={{ mt: 2 }}>Page Access</Typography>
-            <FormGroup row sx={{ mb: 2 }}>
-              {allPagesWithAll.map((page) => (
-                <FormControlLabel
-                  key={page.key}
-                  control={
-                    <Checkbox
-                      checked={
-                        page.key === 'all'
-                          ? editForm.permissions?.length === allPages.length
-                          : editForm.permissions?.includes(page.key)
-                      }
-                      onChange={(e) => {
-                        const checked = e.target.checked;
-                        if (page.key === 'all') {
-                          setEditForm((prev) => ({
-                            ...prev,
-                            permissions: checked ? allPages.map((p) => p.key) : [],
-                          }));
-                        } else {
-                          setEditForm((prev) => ({
-                            ...prev,
-                            permissions: checked
-                              ? [...(prev.permissions || []), page.key]
-                              : (prev.permissions || []).filter((perm) => perm !== page.key),
-                          }));
-                        }
-                      }}
-                    />
-                  }
-                  label={page.label}
-                />
-              ))}
-            </FormGroup>
+            {(nonRemoveableUsers.includes(currentUser.email) || users.find(u => u.email === currentUser.email)?.role === 'SuperAdmin') && (
+              <Box sx={{ mb: 2, overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: 'left', padding: 8 }}>Page Name</th>
+                      {ACTIONS.map(action => (
+                        <th key={action} style={{ textAlign: 'center', padding: 8, minWidth: 60 }}>{action.charAt(0).toUpperCase() + action.slice(1)}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allPages.map(page => (
+                      <tr key={page.key}>
+                        <td style={{ padding: 8 }}>{page.label}</td>
+                        {ACTIONS.map(action => (
+                          <td key={action} style={{ textAlign: 'center', padding: 8 }}>
+                            <Checkbox
+                              checked={!!(editForm.permissions && typeof editForm.permissions === 'object' && editForm.permissions[page.key]?.[action])}
+                              onChange={e => {
+                                const checked = e.target.checked;
+                                setEditForm(prev => {
+                                  const newPerms = { ...(prev.permissions || {}) };
+                                  if (!newPerms[page.key]) newPerms[page.key] = {};
+                                  newPerms[page.key][action] = checked;
+                                  return { ...prev, permissions: newPerms };
+                                });
+                              }}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Box>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)} color="secondary">Cancel</Button>

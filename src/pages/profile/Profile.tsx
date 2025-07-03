@@ -4,12 +4,17 @@ import { useOutletContext } from 'react-router-dom';
 import { User } from '../../models/types';
 import { updateUser } from '../../services/authService';
 import { useState } from 'react';
+import { useAppConfig } from '../../context/AppConfigContext';
 
 const Profile = () => {
   // Get the logged-in user from the outlet context (provided by DashboardLayout)
   const { user } = useOutletContext<{ user: User & { uid?: string } }>();
 
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+
+  const appConfig = useAppConfig();
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
+  const isNonRemoveable = nonRemoveableUsers.includes(user.email);
 
   const userData = {
     firstName: user.name?.split(' ')[0] || user.email.split('@')[0],
@@ -19,6 +24,14 @@ const Profile = () => {
   };
 
   const handleProfileUpdate = async (updatedData: any) => {
+    if (!(isNonRemoveable || user?.permissions?.['profile']?.update)) {
+      setSnackbar({ open: true, message: 'You do not have permission to update your profile.', severity: 'error' });
+      return;
+    }
+    if (!user?.permissions?.['profile']?.update) {
+      setSnackbar({ open: true, message: 'You do not have permission to update your profile.', severity: 'error' });
+      return;
+    }
     if (!user.uid) {
       setSnackbar({ open: true, message: 'User ID not found. Cannot update profile.', severity: 'error' });
       return;

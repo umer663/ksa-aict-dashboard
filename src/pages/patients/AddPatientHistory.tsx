@@ -4,11 +4,16 @@ import { useOutletContext } from 'react-router-dom';
 import { createPatient } from '../../services/authService';
 import { useState } from 'react';
 import { PatientData } from '../../models/types';
+import { useAppConfig } from '../../context/AppConfigContext';
 
 const AddPatientHistory = () => {
   const { user } = useOutletContext<{ user: any }>();
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const appConfig = useAppConfig();
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
+  const isNonRemoveable = nonRemoveableUsers.includes(user.email);
+  const canCreate = isNonRemoveable || user?.permissions?.['add-patient']?.create === true;
 
   const handleSave = async (patient: PatientData) => {
     try {
@@ -32,7 +37,8 @@ const AddPatientHistory = () => {
       >
         Add Patient History
       </Typography>
-      <AddPatientForm onSave={handleSave} success={success} error={error} mode="add" />
+      {canCreate && <AddPatientForm onSave={handleSave} success={success} error={error} mode="add" />}
+      {!canCreate && <Typography color="error">You do not have permission to add patients.</Typography>}
     </Box>
   );
 };
