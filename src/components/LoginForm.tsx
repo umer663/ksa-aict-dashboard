@@ -24,7 +24,7 @@ import {
   Email,
   Lock,
 } from '@mui/icons-material';
-import { loginUser } from '../services/authService';
+import { loginUser, sendPasswordResetIfUserExists } from '../services/authService';
 import { LoginFormProps, IFormInputs } from '../models/types';
 import ksa from '../assets/khuwaja-shamsu-deen-azeemi.jpg';
 
@@ -113,6 +113,11 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [lockoutEndTime, setLockoutEndTime] = useState<Date | null>(null);
   const [overviewOpen, setOverviewOpen] = useState(false);
   const navigate = useNavigate();
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   // Initialize form with validation and real-time feedback
   const {
@@ -153,6 +158,45 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
   // Prevent mousedown default behavior
   const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+  };
+
+  // Password reset dialog handlers
+  const handleOpenResetDialog = () => {
+    setResetDialogOpen(true);
+    setResetEmail('');
+    setResetMessage(null);
+    setResetError(null);
+  };
+
+  const handleCloseResetDialog = () => {
+    setResetDialogOpen(false);
+    setResetEmail('');
+    setResetMessage(null);
+    setResetError(null);
+    setResetLoading(false);
+  };
+
+  const handleResetEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setResetEmail(e.target.value);
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetMessage(null);
+    setResetError(null);
+    try {
+      const result = await sendPasswordResetIfUserExists(resetEmail.trim());
+      if (result.success) {
+        setResetMessage('Password reset email sent! Please check your inbox.');
+      } else {
+        setResetError(result.error || 'Failed to send reset email.');
+      }
+    } catch (err) {
+      setResetError('Failed to send reset email.');
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   /**
@@ -521,6 +565,63 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
             </DialogActions>
           </Dialog>
         </Box>
+
+        {/* Forgot password link */}
+        <Box mt={2} textAlign="right">
+          <Button
+            variant="text"
+            size="small"
+            onClick={handleOpenResetDialog}
+            sx={{ textTransform: 'none' }}
+          >
+            Forgot password?
+          </Button>
+        </Box>
+
+        {/* Password Reset Dialog */}
+        <Dialog open={resetDialogOpen} onClose={handleCloseResetDialog}>
+          <DialogTitle>Reset Password</DialogTitle>
+          <DialogContent>
+            <Typography mb={2}>
+              Enter your email address. If it matches an account, you'll receive a password reset email.
+            </Typography>
+            <form onSubmit={handlePasswordReset}>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Email Address"
+                type="email"
+                fullWidth
+                value={resetEmail}
+                onChange={handleResetEmailChange}
+                required
+                disabled={resetLoading}
+              />
+              {resetError && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  {resetError}
+                </Alert>
+              )}
+              {resetMessage && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                  {resetMessage}
+                </Alert>
+              )}
+              <DialogActions sx={{ px: 0, pb: 0, pt: 2 }}>
+                <Button onClick={handleCloseResetDialog} disabled={resetLoading}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={resetLoading || !resetEmail}
+                >
+                  {resetLoading ? <CircularProgress size={20} /> : 'Send Reset Email'}
+                </Button>
+              </DialogActions>
+            </form>
+          </DialogContent>
+        </Dialog>
       </Box>
     </Box>
   );

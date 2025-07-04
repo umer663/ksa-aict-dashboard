@@ -1,7 +1,7 @@
 import { LoginResponse, UserRole, User } from '../models/types';
 import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { PatientData } from '../models/types';
 
@@ -132,4 +132,34 @@ export const fetchAllPatients = async (): Promise<PatientData[]> => {
 // Delete a patient by patient_id
 export const deletePatientById = async (patientId: string): Promise<void> => {
   await deleteDoc(doc(db, 'patients', patientId));
+};
+
+/**
+ * Check if a user exists in Firestore by email.
+ */
+export const checkUserExistsByEmail = async (email: string): Promise<boolean> => {
+  const usersCol = collection(db, 'users');
+  const q = query(usersCol, where('email', '==', email));
+  const snapshot = await getDocs(q);
+  return !snapshot.empty;
+};
+
+/**
+ * Send password reset email only if user exists in Firestore.
+ */
+export const sendPasswordResetIfUserExists = async (
+  email: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const exists = await checkUserExistsByEmail(email);
+    if (!exists) {
+      return { success: false, error: 'No user found with this email.' };
+    }
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (error: any) {
+    let errorMsg = 'Failed to send password reset email.';
+    if (error.code === 'auth/invalid-email') errorMsg = 'Invalid email address.';
+    return { success: false, error: errorMsg };
+  }
 }; 
