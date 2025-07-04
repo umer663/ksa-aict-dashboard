@@ -107,12 +107,12 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
             </Box>
 
             {/* Profile Section */}
-            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
               <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, mr: 1 }}>
                 {user.email}
               </Typography>
               <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenMenu} sx={{ p: 0 }}>
+                <IconButton onClick={handleOpenMenu} sx={{ p: 0, ml: 2 }}>
                   <Avatar sx={{ bgcolor: 'secondary.main' }}>
                     {user.email.charAt(0).toUpperCase()}
                   </Avatar>
