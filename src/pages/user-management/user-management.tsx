@@ -1,19 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, Paper, List, ListItem, ListItemText, Divider, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Avatar, Checkbox, FormGroup } from '@mui/material';
 import { Edit, Block, CheckCircle, Cancel, PhotoCamera, Search } from '@mui/icons-material';
-import { User, UserRole } from '../../models/types';
+import { User, UserRole, PermissionsObject } from '../../models/types';
 import { fetchAllUsers, deleteUserByUid, registerUser, updateUser } from '../../services/authService';
 import { useAppConfig } from '../../context/AppConfigContext';
 import LoadingSpinner from '../../components/LoadingSpinner';
-
-interface PermissionsObject {
-  [pageKey: string]: {
-    view?: boolean;
-    create?: boolean;
-    update?: boolean;
-    delete?: boolean;
-  };
-}
+import { Dialog as MuiDialog, DialogTitle as MuiDialogTitle, DialogContent as MuiDialogContent, DialogActions as MuiDialogActions } from '@mui/material';
 
 interface NewUserForm {
   email: string;
@@ -35,9 +27,10 @@ const initialForm: NewUserForm = {
   permissions: {},
 };
 
-// Extend User type to include uid for Firestore document ID
+// Extend User type to include permissions as PermissionsObject
 interface UserWithUid extends User {
   uid?: string;
+  permissions?: PermissionsObject;
 }
 
 const ACTIONS = ['view', 'create', 'update', 'delete'] as const;
@@ -54,6 +47,11 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [toggleLoadingUid, setToggleLoadingUid] = useState<string | null>(null);
+  const [creatingUser, setCreatingUser] = useState(false);
+  const [savingEditUser, setSavingEditUser] = useState(false);
+  const [deletingUser, setDeletingUser] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{ uid: string | undefined; email: string }>({ uid: undefined, email: '' });
 
   // Get app config from context
   const appConfig = useAppConfig();
@@ -74,7 +72,10 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
     setLoading(true);
     try {
       const users = await fetchAllUsers();
-      setUsers(users);
+      setUsers(users.map(u => ({
+        ...u,
+        permissions: (u.permissions && typeof u.permissions === 'object' && !Array.isArray(u.permissions)) ? u.permissions : {},
+      })));
     } catch (err) {
       setError('Failed to fetch users');
     } finally {
@@ -121,6 +122,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       setSuccess('');
       return;
     }
+    setCreatingUser(true);
     try {
       // Ensure defaultPermissions is an object
       let permissionsObj: PermissionsObject = {};
@@ -149,6 +151,8 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       }
     } catch (err) {
       setError('Failed to create user');
+    } finally {
+      setCreatingUser(false);
     }
   };
 
@@ -161,7 +165,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       role: user.role,
       blocked: user.blocked || false,
       profileImage: user.profileImage || '',
-      permissions: user.permissions || rolePermissions[user.role],
+      permissions: (user.permissions && typeof user.permissions === 'object' && !Array.isArray(user.permissions)) ? user.permissions as PermissionsObject : {},
     });
     setEditDialogOpen(true);
   };
@@ -169,6 +173,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editUser?.uid) return;
+    setSavingEditUser(true);
     try {
       await updateUser(editUser.uid, {
         email: editForm.email,
@@ -176,7 +181,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
         role: editForm.role,
         blocked: editForm.blocked,
         profileImage: editForm.profileImage,
-        permissions: editForm.permissions,
+        permissions: editForm.permissions as PermissionsObject,
       });
       setEditDialogOpen(false);
       setEditUser(null);
@@ -185,6 +190,8 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       loadUsers();
     } catch (err) {
       setError('Failed to update user');
+    } finally {
+      setSavingEditUser(false);
     }
   };
 
@@ -220,12 +227,15 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       setError("This user cannot be deleted (non-removeable user).");
       return;
     }
+    setDeletingUser(true);
     try {
       await deleteUserByUid(uid);
       setSuccess('User deleted successfully!');
       loadUsers();
     } catch (err) {
       setError('Failed to delete user');
+    } finally {
+      setDeletingUser(false);
     }
   };
 
@@ -342,22 +352,14 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
                         user.email.toLowerCase() === currentUser.email.toLowerCase() ||
                         nonRemoveableUsers.includes(user.email)
                       }
-                      onClick={() => handleDeleteUser(user.uid, user.email)}
+                      onClick={() => {
+                        setUserToDelete({ uid: user.uid, email: user.email });
+                        setConfirmDeleteOpen(true);
+                      }}
                       sx={{ ml: 1 }}
                     >
                       <Cancel />
                     </IconButton>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={!user.blocked}
-                          onChange={() => handleBlockToggle(user)}
-                          disabled={user.email.toLowerCase() === currentUser.email.toLowerCase() || toggleLoadingUid === user.uid || !canUpdate}
-                        />
-                      }
-                      label={user.blocked ? 'Blocked' : 'Active'}
-                      sx={{ ml: 2 }}
-                    />
                     {toggleLoadingUid === user.uid && (
                       <Box sx={{ ml: 1 }}><LoadingSpinner size={20} /></Box>
                     )}
@@ -438,17 +440,17 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {allPages.map(page => (
+                    {allPages.map((page) => (
                       <tr key={page.key}>
                         <td style={{ padding: 8 }}>{page.label}</td>
-                        {ACTIONS.map(action => (
+                        {ACTIONS.map((action: Action) => (
                           <td key={action} style={{ textAlign: 'center', padding: 8 }}>
                             <Checkbox
-                              checked={!!(editForm.permissions && typeof editForm.permissions === 'object' && editForm.permissions[page.key]?.[action])}
+                              checked={!!(editForm.permissions && typeof editForm.permissions === 'object' && (editForm.permissions as PermissionsObject)[page.key]?.[action])}
                               onChange={e => {
                                 const checked = e.target.checked;
                                 setEditForm(prev => {
-                                  const newPerms = { ...(prev.permissions || {}) };
+                                  const newPerms: PermissionsObject = { ...(prev.permissions || {}) };
                                   if (!newPerms[page.key]) newPerms[page.key] = {};
                                   newPerms[page.key][action] = checked;
                                   return { ...prev, permissions: newPerms };
@@ -470,6 +472,34 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
           </DialogActions>
         </form>
       </Dialog>
+      <MuiDialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)}>
+        <MuiDialogTitle>Confirm Delete</MuiDialogTitle>
+        <MuiDialogContent>
+          Are you sure you want to delete user <b>{userToDelete.email}</b>?
+        </MuiDialogContent>
+        <MuiDialogActions>
+          <Button onClick={() => setConfirmDeleteOpen(false)} color="secondary">Cancel</Button>
+          <Button onClick={() => {
+            setConfirmDeleteOpen(false);
+            handleDeleteUser(userToDelete.uid, userToDelete.email);
+          }} color="error" variant="contained">Delete</Button>
+        </MuiDialogActions>
+      </MuiDialog>
+      {creatingUser && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(255,255,255,0.5)', zIndex: 3000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <LoadingSpinner message="Creating user..." />
+        </div>
+      )}
+      {savingEditUser && (
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255,255,255,0.7)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <LoadingSpinner message="Saving changes..." />
+        </div>
+      )}
+      {deletingUser && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(255,255,255,0.5)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <LoadingSpinner message="Deleting user..." />
+        </div>
+      )}
     </Box>
   );
 };

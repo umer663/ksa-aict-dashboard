@@ -10,13 +10,22 @@ export interface Address {
 // User related interfaces
 export type UserRole = 'SuperAdmin' | 'Admin' | 'Therapist' | 'Receptionist';
 
+export interface PermissionsObject {
+  [pageKey: string]: {
+    view?: boolean;
+    create?: boolean;
+    update?: boolean;
+    delete?: boolean;
+  };
+}
+
 export interface User {
   email: string;
   name?: string;
   role: UserRole;
   blocked?: boolean;
   profileImage?: string;
-  permissions?: string[]; // List of allowed page keys
+  permissions?: PermissionsObject;
 }
 
 // Auth related interfaces
