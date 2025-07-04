@@ -24,7 +24,7 @@ import PatientForm from '../../components/AddPatientForm';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
-import { fetchAllPatients, deletePatientById, updatePatient } from '../../services/authService';
+import { fetchAllPatients, deletePatientById, updatePatient, fetchAllDoctors } from '../../services/authService';
 import PatientPrintRecord from '../../components/PatientPrintRecord';
 import { useAppConfig } from '../../context/AppConfigContext';
 import VisitForm from '../../components/VisitForm';
@@ -74,6 +74,7 @@ const PatientHistory = () => {
   const [visitLoading, setVisitLoading] = useState(false);
   const [visitError, setVisitError] = useState<string | null>(null);
   const [visitSuccess, setVisitSuccess] = useState<string | null>(null);
+  const [doctorMap, setDoctorMap] = useState<{ [uid: string]: string }>({});
 
   useEffect(() => {
     const getPatients = async () => {
@@ -89,6 +90,17 @@ const PatientHistory = () => {
     setLoading(true);
     getPatients();
   }, [user]);
+
+  useEffect(() => {
+    // Fetch all doctors and build a map of uid to name
+    fetchAllDoctors().then((doctors) => {
+      const map: { [uid: string]: string } = {};
+      doctors.forEach((doc: any) => {
+        map[doc.uid] = doc.name;
+      });
+      setDoctorMap(map);
+    });
+  }, []);
 
   // Fetch visits when a patient is selected
   useEffect(() => {
@@ -333,8 +345,11 @@ const PatientHistory = () => {
                 {visits.map((visit, idx) => (
                   <Paper key={visit.id} sx={{ mb: 2, p: 2 }}>
                     <Typography variant="subtitle2">
-                      {visit.visitDate || ''} — Doctor: {visit.doctorId || ''}
+                      {visit.visitDate || ''} — Doctor: {doctorMap[visit.doctorId] || visit.doctorId || ''}
                     </Typography>
+                    {visit.followUpDate && (
+                      <Typography variant="body2"><b>Follow-up Date:</b> {visit.followUpDate}</Typography>
+                    )}
                     <Typography variant="body2"><b>Symptoms:</b> {visit.symptoms || ''}</Typography>
                     <Typography variant="body2"><b>Diagnosis:</b> {visit.diagnosis || ''}</Typography>
                     <Typography variant="body2"><b>Recommendations:</b> {visit.recommendations || ''}</Typography>
