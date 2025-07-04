@@ -11,6 +11,7 @@ const PatientPrintRecord = ({ patient }: { patient: PatientData | null }) => {
         <strong>Patient Name:</strong> {patient.personal_info.first_name} {patient.personal_info.last_name}<br />
         <strong>Date of Birth:</strong> {patient.personal_info.date_of_birth}<br />
         <strong>Gender:</strong> {patient.personal_info.gender}<br />
+        <strong>Blood Type:</strong> {patient.personal_info.bloodType || '-'}<br />
         <strong>Contact Number:</strong> {patient.personal_info.contact_number}<br />
         <strong>Email:</strong> {patient.personal_info.email}<br />
         <strong>Address:</strong> {patient.personal_info.address.street}, {patient.personal_info.address.city}, {patient.personal_info.address.state}, {patient.personal_info.address.country}, {patient.personal_info.address.postal_code}

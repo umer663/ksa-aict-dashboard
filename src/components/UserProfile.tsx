@@ -69,9 +69,10 @@ interface UserProfileProps {
     profileImage?: string;
   };
   onProfileUpdate?: (updatedData: any) => void;
+  canUpdate?: boolean;
 }
 
-const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
+const UserProfile = ({ initialData, onProfileUpdate, canUpdate = true }: UserProfileProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState(initialData);
@@ -196,6 +197,7 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
                 startIcon={<EditIcon />}
                 onClick={handleEditClick}
                 sx={{ mt: 2 }}
+                disabled={!canUpdate}
               >
                 Edit Profile
               </Button>
@@ -250,7 +252,7 @@ const UserProfile = ({ initialData, onProfileUpdate }: UserProfileProps) => {
                   variant="contained"
                   startIcon={loading ? <CircularProgress size={20} /> : <SaveIcon />}
                   onClick={handleSave}
-                  disabled={loading}
+                  disabled={loading || !canUpdate}
                 >
                   {loading ? 'Saving...' : 'Save Changes'}
                 </Button>

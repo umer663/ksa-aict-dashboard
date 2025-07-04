@@ -37,7 +37,7 @@ const AddPatientHistory = () => {
       >
         Add Patient History
       </Typography>
-      {canCreate && <AddPatientForm onSave={handleSave} success={success} error={error} mode="add" />}
+      {canCreate && <AddPatientForm onSave={handleSave} success={success} error={error} mode="add" canCreateOrUpdate={canCreate} />}
       {!canCreate && <Typography color="error">You do not have permission to add patients.</Typography>}
     </Box>
   );

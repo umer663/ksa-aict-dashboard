@@ -24,7 +24,7 @@ import PatientForm from '../../components/AddPatientForm';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
 import { useOutletContext } from 'react-router-dom';
-import { fetchAllPatients, deletePatientById } from '../../services/authService';
+import { fetchAllPatients, deletePatientById, updatePatient } from '../../services/authService';
 import PatientPrintRecord from '../../components/PatientPrintRecord';
 import { useAppConfig } from '../../context/AppConfigContext';
 import VisitForm from '../../components/VisitForm';
@@ -90,6 +90,10 @@ const PatientHistory = () => {
 
   const handleSaveEdit = async (updatedPatient: PatientData): Promise<void> => {
     try {
+      // Update in Firestore
+      await updatePatient(updatedPatient.patient_id, updatedPatient);
+
+      // Update local state
       const updatedPatients = patients.map((patient) =>
         patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
       );
@@ -98,8 +102,18 @@ const PatientHistory = () => {
       if (selectedPatient?.patient_id === updatedPatient.patient_id) {
         setSelectedPatient(updatedPatient);
       }
+      setEditingPatient(null); // Close the dialog after save
+      setSnackbar({
+        open: true,
+        message: 'Patient updated successfully!',
+        severity: 'success',
+      });
     } catch (error) {
-      throw new Error('Failed to save patient data');
+      setSnackbar({
+        open: true,
+        message: 'Failed to update patient in Firestore',
+        severity: 'error',
+      });
     }
   };
 
@@ -225,22 +239,34 @@ const PatientHistory = () => {
                   >
                     <Visibility />
                   </IconButton>
-                  {/* Optionally, keep edit/print/delete as needed */}
-                  <IconButton
-                    edge="end"
-                    aria-label="print"
-                    onClick={() => handlePrint(patient)}
-                  >
-                    <PrintIcon />
-                  </IconButton>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    color="error"
-                    onClick={() => handleDeleteClick(patient)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
+                  {canEdit && (
+                    <IconButton
+                      edge="end"
+                      aria-label="edit"
+                      onClick={() => setEditingPatient(patient)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                  {(canEdit || canDelete) && (
+                    <IconButton
+                      edge="end"
+                      aria-label="print"
+                      onClick={() => handlePrint(patient)}
+                    >
+                      <PrintIcon />
+                    </IconButton>
+                  )}
+                  {canDelete && (
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      color="error"
+                      onClick={() => handleDeleteClick(patient)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
                 </Paper>
               ))}
             </List>
@@ -300,15 +326,25 @@ const PatientHistory = () => {
           )}
           {/* Visit Form Dialog */}
           <Dialog open={visitFormOpen} onClose={() => setVisitFormOpen(false)} maxWidth="md" fullWidth>
-            <VisitForm
-              onSave={handleAddVisit}
-              lastVisit={visits[0]}
-              loading={visitLoading}
-              error={visitError || undefined}
-              success={visitSuccess || undefined}
-              onClose={() => setVisitFormOpen(false)}
-              user={user}
-            />
+            <Box sx={{ position: 'relative' }}>
+              <IconButton
+                aria-label="Close Add Visit"
+                onClick={() => setVisitFormOpen(false)}
+                sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
+              >
+                &times;
+              </IconButton>
+              <VisitForm
+                onSave={handleAddVisit}
+                lastVisit={visits[0]}
+                loading={visitLoading}
+                error={visitError || undefined}
+                success={visitSuccess || undefined}
+                onClose={() => setVisitFormOpen(false)}
+                user={user}
+                canCreate={canEdit || canCreate}
+              />
+            </Box>
           </Dialog>
         </>
       )}
@@ -338,6 +374,24 @@ const PatientHistory = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Edit Patient Dialog */}
+      <Dialog
+        open={!!editingPatient}
+        onClose={() => setEditingPatient(null)}
+        maxWidth="md"
+        fullWidth
+      >
+        {editingPatient && (
+          <PatientForm
+            patient={editingPatient}
+            mode="edit"
+            onSave={handleSaveEdit}
+            onClose={() => setEditingPatient(null)}
+            canCreateOrUpdate={canEdit}
+          />
+        )}
+      </Dialog>
     </Box>
   );
 };

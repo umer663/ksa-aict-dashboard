@@ -50,6 +50,7 @@ export interface PersonalInfo {
   contact_number: string;
   email: string;
   address: Address;
+  bloodType?: string; // Added bloodType field
 }
 
 export interface Surgery {

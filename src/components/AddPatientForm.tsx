@@ -33,6 +33,7 @@ export interface PatientFormProps {
   error?: string;
   success?: string;
   onClose?: () => void;
+  canCreateOrUpdate?: boolean;
 }
 
 const defaultAddress: Address = {
@@ -50,14 +51,24 @@ const defaultPersonalInfo: PersonalInfo = {
   contact_number: '',
   email: '',
   address: defaultAddress,
+  bloodType: '', // Add default value for bloodType
+};
+
+const defaultMedicalHistory = {
+  chronic_diseases: [],
+  previous_surgeries: [],
+  medications: [],
+  allergies: [],
+  family_medical_history: [],
 };
 
 const defaultPatient: PatientData = {
   patient_id: uuidv4(),
   personal_info: defaultPersonalInfo,
+  medical_history: defaultMedicalHistory,
 };
 
-const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mode = 'add', onSave, saving = false, error = '', success = '', onClose }, ref) => {
+const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mode = 'add', onSave, saving = false, error = '', success = '', onClose, canCreateOrUpdate }, ref) => {
   const [form, setForm] = useState<PatientData>(patient || defaultPatient);
 
   useEffect(() => {
@@ -234,10 +245,22 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
               disabled={mode === 'view'}
             />
           </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              label="Blood Type"
+              value={form.personal_info.bloodType || ''}
+              onChange={e => handlePersonalInfoChange('bloodType', e.target.value)}
+              fullWidth
+              margin="normal"
+              placeholder="e.g. A+, O-, etc."
+              required
+              disabled={mode === 'view'}
+            />
+          </Grid>
         </Grid>
         {mode !== 'view' && (
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving}>
+          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving || !canCreateOrUpdate}>
               {saving ? 'Saving...' : mode === 'add' ? 'Save Patient' : 'Update Patient'}
           </Button>
         </Box>

@@ -59,7 +59,7 @@ const Profile = () => {
       >
         My Profile
       </Typography>
-      <UserProfile initialData={userData} onProfileUpdate={handleProfileUpdate} />
+      <UserProfile initialData={userData} onProfileUpdate={handleProfileUpdate} canUpdate={isNonRemoveable || user?.permissions?.['profile']?.update === true} />
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

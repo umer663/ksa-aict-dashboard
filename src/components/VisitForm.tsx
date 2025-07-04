@@ -20,11 +20,12 @@ export interface VisitFormProps {
   success?: string;
   onClose?: () => void;
   user: any; // Add user prop
+  canCreate: boolean; // Add canCreate prop
 }
 
 const defaultMedication: Medication = { name: '', dosage: '', frequency: '' };
 
-const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = false, error = '', success = '', onClose, user }) => {
+const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = false, error = '', success = '', onClose, user, canCreate }) => {
   const [form, setForm] = useState({
     visitDate: dayjs().format('YYYY-MM-DD'),
     doctorId: '',
@@ -217,7 +218,7 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
           </Grid>
         </Grid>
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={loading}>
+          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={loading || !canCreate}>
             {loading ? 'Saving...' : 'Save Visit'}
           </Button>
         </Box>

@@ -370,27 +370,31 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
                     />
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
-                    <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(user)}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      color="error"
-                      disabled={
-                        !user.email ||
-                        !currentUser.email ||
-                        user.email.toLowerCase() === currentUser.email.toLowerCase() ||
-                        nonRemoveableUsers.includes(user.email)
-                      }
-                      onClick={() => {
-                        setUserToDelete({ uid: user.uid, email: user.email });
-                        setConfirmDeleteOpen(true);
-                      }}
-                      sx={{ ml: 1 }}
-                    >
-                      <Cancel />
-                    </IconButton>
+                    {canUpdate && (
+                      <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(user)}>
+                        <Edit />
+                      </IconButton>
+                    )}
+                    {canDelete && (
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        color="error"
+                        disabled={
+                          !user.email ||
+                          !currentUser.email ||
+                          user.email.toLowerCase() === currentUser.email.toLowerCase() ||
+                          nonRemoveableUsers.includes(user.email)
+                        }
+                        onClick={() => {
+                          setUserToDelete({ uid: user.uid, email: user.email });
+                          setConfirmDeleteOpen(true);
+                        }}
+                        sx={{ ml: 1 }}
+                      >
+                        <Cancel />
+                      </IconButton>
+                    )}
                     {toggleLoadingUid === user.uid && (
                       <Box sx={{ ml: 1 }}><LoadingSpinner size={20} /></Box>
                     )}
@@ -500,7 +504,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setEditDialogOpen(false)} color="secondary">Cancel</Button>
-            <Button type="submit" variant="contained">Save</Button>
+            <Button type="submit" variant="contained" disabled={!canUpdate}>Save</Button>
           </DialogActions>
         </form>
       </Dialog>
