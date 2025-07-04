@@ -486,6 +486,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           </Button>
 
           {/* Web Application Overview Button */}
+          {/*
           <Button
             fullWidth
             variant="outlined"
@@ -495,6 +496,7 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
           >
             Web Application Overview
           </Button>
+          */}
 
           {/* Overview Modal */}
           <Dialog

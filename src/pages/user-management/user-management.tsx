@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, MenuItem, Paper, List, ListItem, ListItemText, Divider, Alert, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Avatar, Checkbox, FormGroup } from '@mui/material';
-import { Edit, Block, CheckCircle, Cancel, PhotoCamera, Search } from '@mui/icons-material';
+import { Edit, Block, CheckCircle, Cancel, PhotoCamera, Search, Visibility, VisibilityOff } from '@mui/icons-material';
 import { User, UserRole, PermissionsObject } from '../../models/types';
 import { fetchAllUsers, deleteUserByUid, registerUser, updateUser } from '../../services/authService';
 import { useAppConfig } from '../../context/AppConfigContext';
@@ -52,6 +52,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   const [deletingUser, setDeletingUser] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<{ uid: string | undefined; email: string }>({ uid: undefined, email: '' });
+  const [showPassword, setShowPassword] = useState(false);
 
   // Get app config from context
   const appConfig = useAppConfig();
@@ -300,12 +301,23 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
             <TextField
               label="Password"
               name="password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={form.password}
               onChange={handleChange}
               fullWidth
               margin="normal"
               required
+              InputProps={{
+                endAdornment: (
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword((show) => !show)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                ),
+              }}
             />
             <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create User</Button>
           </form>
