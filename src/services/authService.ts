@@ -186,13 +186,13 @@ export const sendPasswordResetIfUserExists = async (
   }
 };
 
-// Fetch all doctors (users with role "Doctor" and active)
+// Fetch all doctors (users with role "Therapist" and active)
 export const fetchAllDoctors = async () => {
   const usersCol = collection(db, 'users');
   const q = query(usersCol);
   const snapshot = await getDocs(q);
   return snapshot.docs
-    .filter(doc => doc.data().role === 'Doctor' && doc.data().active !== false)
+    .filter(doc => doc.data().role === 'Therapist' && doc.data().active !== false)
     .map(doc => ({ uid: doc.id, ...doc.data() }));
 };
 

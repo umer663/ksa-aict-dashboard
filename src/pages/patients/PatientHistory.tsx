@@ -307,6 +307,7 @@ const PatientHistory = () => {
               error={visitError || undefined}
               success={visitSuccess || undefined}
               onClose={() => setVisitFormOpen(false)}
+              user={user}
             />
           </Dialog>
         </>

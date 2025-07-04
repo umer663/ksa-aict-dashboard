@@ -19,11 +19,12 @@ export interface VisitFormProps {
   error?: string;
   success?: string;
   onClose?: () => void;
+  user: any; // Add user prop
 }
 
 const defaultMedication: Medication = { name: '', dosage: '', frequency: '' };
 
-const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = false, error = '', success = '', onClose }) => {
+const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = false, error = '', success = '', onClose, user }) => {
   const [form, setForm] = useState({
     visitDate: dayjs().format('YYYY-MM-DD'),
     doctorId: '',
@@ -36,8 +37,19 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
   const [doctors, setDoctors] = useState<{ uid: string; name: string }[]>([]);
 
   useEffect(() => {
-    fetchAllDoctors().then(setDoctors);
-  }, []);
+    fetchAllDoctors().then((allDoctors) => {
+      if (user?.role === 'Therapist') {
+        // Only show the logged-in therapist
+        const therapist = allDoctors.find((doc: any) => doc.email === user.email);
+        setDoctors(therapist ? [{ uid: therapist.uid, name: therapist.name }] : []);
+        setForm(prev => ({ ...prev, doctorId: therapist ? therapist.uid : '' }));
+      } else if (user?.role === 'SuperAdmin' || user?.role === 'Admin') {
+        setDoctors(allDoctors);
+      } else {
+        setDoctors([]);
+      }
+    });
+  }, [user]);
 
   const handleChange = (field: string, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -109,6 +121,7 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
               fullWidth
               margin="normal"
               required
+              disabled={user?.role === 'Therapist'} // Therapist cannot change doctor
             >
               {doctors.map(doc => (
                 <MenuItem key={doc.uid} value={doc.uid}>{doc.name}</MenuItem>
