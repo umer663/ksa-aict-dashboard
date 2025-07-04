@@ -146,6 +146,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
         setError('');
         setForm(initialForm);
         loadUsers();
+        setTimeout(() => setSuccess(''), 2000);
       } else {
         setError(response.error || 'Failed to create user');
       }
@@ -201,7 +202,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
     try {
       await updateUser(user.uid, { blocked: !user.blocked });
       setSuccess(!user.blocked ? 'User blocked.' : 'User unblocked.');
-      setTimeout(() => setSuccess(''), 2000);
+      setTimeout(() => setSuccess(''), 5000);
       await loadUsers();
     } catch (err) {
       setError('Failed to update user status');
@@ -232,6 +233,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       await deleteUserByUid(uid);
       setSuccess('User deleted successfully!');
       loadUsers();
+      setTimeout(() => setSuccess(''), 2000);
     } catch (err) {
       setError('Failed to delete user');
     } finally {
@@ -423,6 +425,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
                   checked={!editForm.blocked}
                   onChange={() => setEditForm({ ...editForm, blocked: !editForm.blocked })}
                   color="success"
+                  disabled={editUser?.email === currentUser.email}
                 />
               }
               label={editForm.blocked ? 'Blocked' : 'Active'}
