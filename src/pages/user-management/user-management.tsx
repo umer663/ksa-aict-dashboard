@@ -17,11 +17,13 @@ interface NewUserForm {
   permissions?: PermissionsObject;
 }
 
+const USER_ROLES: UserRole[] = ['SuperAdmin', 'Admin', 'Therapist', 'Receptionist'];
+
 const initialForm: NewUserForm = {
   email: '',
   name: '',
   password: '',
-  role: 'Admin',
+  role: 'Admin', // default role
   blocked: false,
   profileImage: '',
   permissions: {},
@@ -59,7 +61,6 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   const allPages = appConfig?.pages || [];
   const rolePermissions = appConfig?.rolePermissions || {};
   const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
-  const defaultRole = appConfig?.defaultRole || '';
   const defaultPermissions = appConfig?.defaultPermissions || [];
 
   // Add permission checks:
@@ -137,7 +138,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
       }
       const response = await registerUser(form.email, form.password, {
         name: form.name,
-        role: defaultRole as UserRole,
+        role: form.role as UserRole, // Use the selected role from the dropdown
         blocked: form.blocked,
         profileImage: form.profileImage,
         permissions: permissionsObj,
@@ -298,6 +299,22 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
               margin="normal"
               required
             />
+            <TextField
+              label="Role"
+              name="role"
+              select
+              value={form.role}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              required
+            >
+              {USER_ROLES.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               label="Password"
               name="password"

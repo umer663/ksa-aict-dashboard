@@ -1,7 +1,7 @@
 import { LoginResponse, UserRole, User } from '../models/types';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, query, where, addDoc, orderBy } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { PatientData } from '../models/types';
 
@@ -126,7 +126,29 @@ export const updatePatient = async (patientId: string, patient: PatientData) => 
 export const fetchAllPatients = async (): Promise<PatientData[]> => {
   const patientsCol = collection(db, 'patients');
   const patientSnapshot = await getDocs(patientsCol);
-  return patientSnapshot.docs.map(doc => ({ ...doc.data(), patient_id: doc.id }) as PatientData);
+  return patientSnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      ...data,
+      patient_id: doc.id,
+      personal_info: data.personal_info || {
+        first_name: '',
+        last_name: '',
+        date_of_birth: '',
+        gender: '',
+        contact_number: '',
+        email: '',
+        address: { street: '', city: '', state: '', postal_code: '', country: '' }
+      },
+      medical_history: data.medical_history || {
+        chronic_diseases: [],
+        previous_surgeries: [],
+        medications: [],
+        allergies: [],
+        family_medical_history: []
+      }
+    } as PatientData;
+  });
 };
 
 // Delete a patient by patient_id
@@ -162,4 +184,32 @@ export const sendPasswordResetIfUserExists = async (
     if (error.code === 'auth/invalid-email') errorMsg = 'Invalid email address.';
     return { success: false, error: errorMsg };
   }
+};
+
+// Fetch all doctors (users with role "Doctor" and active)
+export const fetchAllDoctors = async () => {
+  const usersCol = collection(db, 'users');
+  const q = query(usersCol);
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .filter(doc => doc.data().role === 'Doctor' && doc.data().active !== false)
+    .map(doc => ({ uid: doc.id, ...doc.data() }));
+};
+
+// Create a new visit for a patient
+export const createVisit = async (patientId: string, visitData: any) => {
+  const visitsCol = collection(db, 'patients', patientId, 'visits');
+  await addDoc(visitsCol, {
+    ...visitData,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+};
+
+// Fetch all visits for a patient, most recent first
+export const fetchVisits = async (patientId: string) => {
+  const visitsCol = collection(db, 'patients', patientId, 'visits');
+  const q = query(visitsCol, orderBy('visitDate', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }; 

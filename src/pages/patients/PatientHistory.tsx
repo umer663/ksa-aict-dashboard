@@ -3,29 +3,23 @@ import {
   Box,
   Typography,
   List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton,
   Paper,
-  Divider,
-  Tooltip,
-  Chip,
   Button,
   Snackbar,
   Alert,
   Dialog,
   CircularProgress,
   TextField,
+  IconButton,
 } from '@mui/material';
 import {
+  Print as PrintIcon,
+  ArrowBack as ArrowBackIcon,
   Visibility,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Print as PrintIcon,
-  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import PatientForm from '../../components/AddPatientForm';
 import DeleteConfirmationDialog from '../../components/DeleteConfirmationDialog';
 import { PatientData } from '../../models/types';
@@ -33,6 +27,8 @@ import { useOutletContext } from 'react-router-dom';
 import { fetchAllPatients, deletePatientById } from '../../services/authService';
 import PatientPrintRecord from '../../components/PatientPrintRecord';
 import { useAppConfig } from '../../context/AppConfigContext';
+import VisitForm from '../../components/VisitForm';
+import { fetchVisits, createVisit } from '../../services/authService';
 
 const PatientHistory = () => {
   const { user } = useOutletContext<{ user: any }>();
@@ -60,6 +56,11 @@ const PatientHistory = () => {
   const [printDialogOpen, setPrintDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [visits, setVisits] = useState<any[]>([]);
+  const [visitFormOpen, setVisitFormOpen] = useState(false);
+  const [visitLoading, setVisitLoading] = useState(false);
+  const [visitError, setVisitError] = useState<string | null>(null);
+  const [visitSuccess, setVisitSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const getPatients = async () => {
@@ -76,14 +77,24 @@ const PatientHistory = () => {
     getPatients();
   }, [user]);
 
+  // Fetch visits when a patient is selected
+  useEffect(() => {
+    if (selectedPatient) {
+      setVisitLoading(true);
+      fetchVisits(selectedPatient.patient_id)
+        .then(setVisits)
+        .catch(() => setVisits([]))
+        .finally(() => setVisitLoading(false));
+    }
+  }, [selectedPatient]);
+
   const handleSaveEdit = async (updatedPatient: PatientData): Promise<void> => {
     try {
       const updatedPatients = patients.map((patient) =>
         patient.patient_id === updatedPatient.patient_id ? updatedPatient : patient
       );
       setPatients(updatedPatients);
-      
-      // If the patient being viewed is the one being edited, update the view
+
       if (selectedPatient?.patient_id === updatedPatient.patient_id) {
         setSelectedPatient(updatedPatient);
       }
@@ -106,10 +117,8 @@ const PatientHistory = () => {
     try {
       if (!patientToDelete) return;
 
-      // Delete from Firestore
       await deletePatientById(patientToDelete.patient_id);
 
-      // Filter out the patient to delete locally
       const updatedPatients = patients.filter(
         (p: PatientData) => p.patient_id !== patientToDelete.patient_id
       );
@@ -138,6 +147,24 @@ const PatientHistory = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleAddVisit = async (visitData: any) => {
+    if (!selectedPatient) return;
+    setVisitLoading(true);
+    setVisitError(null);
+    setVisitSuccess(null);
+    try {
+      await createVisit(selectedPatient.patient_id, visitData);
+      setVisitSuccess('Visit added successfully!');
+      const updatedVisits = await fetchVisits(selectedPatient.patient_id);
+      setVisits(updatedVisits);
+      setVisitFormOpen(false);
+    } catch (err) {
+      setVisitError('Failed to add visit');
+    } finally {
+      setVisitLoading(false);
+    }
+  };
+
   const filteredPatients = patients.filter((patient) => {
     const name = `${patient.personal_info?.first_name || ''} ${patient.personal_info?.last_name || ''}`.toLowerCase();
     const id = patient.patient_id?.toLowerCase() || '';
@@ -161,18 +188,65 @@ const PatientHistory = () => {
         Patient History
       </Typography>
 
-      <Box sx={{ mb: 3, maxWidth: 400 }}>
-        <TextField
-          fullWidth
-          size="small"
-          variant="outlined"
-          placeholder="Search by name or patient ID"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </Box>
-
-      {selectedPatient ? (
+      {!selectedPatient ? (
+        <Paper
+          component={motion.div}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          sx={{ p: 3 }}
+        >
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            placeholder="Search by name or patient ID"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <List>
+              {filteredPatients.map((patient) => (
+                <Paper key={patient.patient_id} sx={{ mb: 1, p: 1, display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ flex: 1, cursor: 'pointer' }} onClick={() => setSelectedPatient(patient)}>
+                    <Typography variant="subtitle1">
+                      {patient.personal_info.first_name} {patient.personal_info.last_name}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    edge="end"
+                    aria-label="view"
+                    onClick={() => setSelectedPatient(patient)}
+                  >
+                    <Visibility />
+                  </IconButton>
+                  {/* Optionally, keep edit/print/delete as needed */}
+                  <IconButton
+                    edge="end"
+                    aria-label="print"
+                    onClick={() => handlePrint(patient)}
+                  >
+                    <PrintIcon />
+                  </IconButton>
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    color="error"
+                    onClick={() => handleDeleteClick(patient)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Paper>
+              ))}
+            </List>
+          )}
+        </Paper>
+      ) : (
         <>
           <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
             <Button
@@ -184,161 +258,82 @@ const PatientHistory = () => {
             </Button>
             <Button
               variant="outlined"
-              startIcon={<PrintIcon />}
-              onClick={() => handlePrint(selectedPatient)}
+              onClick={() => setVisitFormOpen(true)}
             >
-              Print Record
+              Add New Visit
             </Button>
           </Box>
-          <PatientForm patient={selectedPatient} mode="view" onSave={async () => {}} saving={false} />
-        </>
-      ) : (
-        <Paper
-          component={motion.div}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          sx={{ borderRadius: 2 }}
-        >
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" minHeight={200}>
-              <CircularProgress />
-            </Box>
+          {/* Patient Demographics */}
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Patient Information
+            </Typography>
+            <Typography><b>Name:</b> {selectedPatient.personal_info?.first_name || ''} {selectedPatient.personal_info?.last_name || ''}</Typography>
+            <Typography><b>Date of Birth:</b> {selectedPatient.personal_info?.date_of_birth || ''}</Typography>
+            <Typography><b>Gender:</b> {selectedPatient.personal_info?.gender || ''}</Typography>
+            <Typography><b>Contact:</b> {selectedPatient.personal_info?.contact_number || ''}</Typography>
+            <Typography><b>Email:</b> {selectedPatient.personal_info?.email || ''}</Typography>
+            <Typography><b>Address:</b> {selectedPatient.personal_info?.address?.street || ''}, {selectedPatient.personal_info?.address?.city || ''}, {selectedPatient.personal_info?.address?.country || ''}</Typography>
+          </Paper>
+          {/* Visit History */}
+          <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Visit History</Typography>
+          {visitLoading ? (
+            <Typography>Loading visits...</Typography>
           ) : (
-            <List>
-              {filteredPatients.length === 0 ? (
-                <ListItem>
-                  <ListItemText
-                    primary={<Typography variant="body1" color="text.secondary">No data found.</Typography>}
-                  />
-                </ListItem>
-              ) : (
-                filteredPatients.map((patient: PatientData, index: number) => (
-                  <motion.div
-                    key={patient.patient_id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    {index > 0 && <Divider />}
-                    <ListItem>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle1">
-                              {patient.personal_info?.first_name || 'Unknown'} {patient.personal_info?.last_name || ''}
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <Tooltip title="View Details">
-                          <IconButton
-                            edge="end"
-                            onClick={() => setSelectedPatient(patient)}
-                            sx={{ mr: 1 }}
-                          >
-                            <Visibility />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Print Record">
-                          <IconButton
-                            edge="end"
-                            onClick={() => handlePrint(patient)}
-                            sx={{ mr: 1 }}
-                          >
-                            <PrintIcon />
-                          </IconButton>
-                        </Tooltip>
-                        {canEdit && (
-                          <Tooltip title="Edit Patient">
-                            <IconButton
-                              edge="end"
-                              onClick={() => setEditingPatient(patient)}
-                              sx={{ mr: 1 }}
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                        {canDelete && (
-                          <Tooltip title="Delete Patient">
-                            <IconButton
-                              edge="end"
-                              onClick={() => handleDeleteClick(patient)}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        )}
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  </motion.div>
-                ))
-              )}
-            </List>
+            (!visits || visits.length === 0) ? (
+              <Typography>No visits found for this patient.</Typography>
+            ) : (
+              <List>
+                {visits.map((visit, idx) => (
+                  <Paper key={visit.id} sx={{ mb: 2, p: 2 }}>
+                    <Typography variant="subtitle2">
+                      {visit.visitDate || ''} — Doctor: {visit.doctorId || ''}
+                    </Typography>
+                    <Typography variant="body2"><b>Symptoms:</b> {visit.symptoms || ''}</Typography>
+                    <Typography variant="body2"><b>Diagnosis:</b> {visit.diagnosis || ''}</Typography>
+                    <Typography variant="body2"><b>Recommendations:</b> {visit.recommendations || ''}</Typography>
+                    <Typography variant="body2"><b>Medications:</b> {Array.isArray(visit.medications) ? visit.medications.map((m: any) => `${m.name || m.medication_name || ''} (${m.dosage || ''}, ${m.frequency || ''})`).join(', ') : ''}</Typography>
+                  </Paper>
+                ))}
+              </List>
+            )
           )}
-        </Paper>
+          {/* Visit Form Dialog */}
+          <Dialog open={visitFormOpen} onClose={() => setVisitFormOpen(false)} maxWidth="md" fullWidth>
+            <VisitForm
+              onSave={handleAddVisit}
+              lastVisit={visits[0]}
+              loading={visitLoading}
+              error={visitError || undefined}
+              success={visitSuccess || undefined}
+              onClose={() => setVisitFormOpen(false)}
+            />
+          </Dialog>
+        </>
       )}
 
-      {editingPatient && (
-        <PatientForm
-          patient={editingPatient}
-          mode="edit"
-          onSave={async (updatedPatient) => {
-            await handleSaveEdit(updatedPatient);
-            setEditingPatient(null);
-          }}
-          saving={false}
-          onClose={() => setEditingPatient(null)}
-        />
-      )}
-
-      {printingPatient && (
-        <Dialog open={printDialogOpen} onClose={() => setPrintDialogOpen(false)} maxWidth="md" fullWidth>
-          <Box sx={{ p: 2, bgcolor: 'white' }}>
-            <PatientPrintRecord patient={printingPatient} />
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button variant="contained" color="primary" onClick={() => {
-                setTimeout(() => {
-                  window.print();
-                }, 100);
-              }}>Print</Button>
-              <Button variant="outlined" sx={{ ml: 2 }} onClick={() => setPrintDialogOpen(false)}>Close</Button>
-            </Box>
-          </Box>
-        </Dialog>
-      )}
+      {/* Print Dialog */}
+      <Dialog open={printDialogOpen} onClose={() => setPrintDialogOpen(false)} maxWidth="md" fullWidth>
+        <PatientPrintRecord patient={printingPatient as PatientData | null} ref={printRef} />
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      {patientToDelete && (
-        <DeleteConfirmationDialog
-          open={deleteDialogOpen}
-          onClose={() => {
-            setDeleteDialogOpen(false);
-            setPatientToDelete(null);
-          }}
-          onConfirm={handleDeleteConfirm}
-          patientName={`${patientToDelete.personal_info.first_name} ${patientToDelete.personal_info.last_name}`}
-          patientId={patientToDelete.patient_id}
-        />
-      )}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+        patientName={patientToDelete?.personal_info?.first_name + ' ' + patientToDelete?.personal_info?.last_name}
+        patientId={patientToDelete?.patient_id || ''}
+      />
 
-      {/* Success/Error Snackbar */}
+      {/* Snackbar for feedback */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
