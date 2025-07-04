@@ -30,6 +30,18 @@ import { useAppConfig } from '../../context/AppConfigContext';
 import VisitForm from '../../components/VisitForm';
 import { fetchVisits, createVisit } from '../../services/authService';
 
+// Add the calculateAge function here
+function calculateAge(dateOfBirth: string): number {
+  const dob = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+  return age;
+}
+
 const PatientHistory = () => {
   const { user } = useOutletContext<{ user: any }>();
   const appConfig = useAppConfig();
@@ -37,6 +49,7 @@ const PatientHistory = () => {
   const isNonRemoveable = nonRemoveableUsers.includes(user.email);
   const canEdit = isNonRemoveable || user?.permissions?.['patient-history']?.update === true;
   const canDelete = isNonRemoveable || user?.permissions?.['patient-history']?.delete === true;
+  const canCreate = isNonRemoveable || user?.permissions?.['patient-history']?.create === true;
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
@@ -296,7 +309,14 @@ const PatientHistory = () => {
             </Typography>
             <Typography><b>Name:</b> {selectedPatient.personal_info?.first_name || ''} {selectedPatient.personal_info?.last_name || ''}</Typography>
             <Typography><b>Date of Birth:</b> {selectedPatient.personal_info?.date_of_birth || ''}</Typography>
+            <Typography>
+              <b>Age:</b>{' '}
+              {selectedPatient.personal_info?.date_of_birth
+                ? calculateAge(selectedPatient.personal_info.date_of_birth)
+                : ''}
+            </Typography>
             <Typography><b>Gender:</b> {selectedPatient.personal_info?.gender || ''}</Typography>
+            <Typography><b>Blood Group:</b> {selectedPatient.personal_info?.bloodType || ''}</Typography>
             <Typography><b>Contact:</b> {selectedPatient.personal_info?.contact_number || ''}</Typography>
             <Typography><b>Email:</b> {selectedPatient.personal_info?.email || ''}</Typography>
             <Typography><b>Address:</b> {selectedPatient.personal_info?.address?.street || ''}, {selectedPatient.personal_info?.address?.city || ''}, {selectedPatient.personal_info?.address?.country || ''}</Typography>
@@ -342,7 +362,7 @@ const PatientHistory = () => {
                 success={visitSuccess || undefined}
                 onClose={() => setVisitFormOpen(false)}
                 user={user}
-                canCreate={canEdit || canCreate}
+                canCreate={canCreate}
               />
             </Box>
           </Dialog>
@@ -351,7 +371,7 @@ const PatientHistory = () => {
 
       {/* Print Dialog */}
       <Dialog open={printDialogOpen} onClose={() => setPrintDialogOpen(false)} maxWidth="md" fullWidth>
-        <PatientPrintRecord patient={printingPatient as PatientData | null} ref={printRef} />
+        <PatientPrintRecord patient={printingPatient as PatientData | null} />
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
