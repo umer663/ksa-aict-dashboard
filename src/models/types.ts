@@ -81,7 +81,7 @@ export interface CurrentHealthStatus {
 }
 
 export interface PatientData {
-  patient_id: string;
+  patient_id?: string;
   personal_info: PersonalInfo;
   medical_history: MedicalHistory;
   therapistIds?: string[]; // Array of therapist UIDs associated with this patient

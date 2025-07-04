@@ -131,8 +131,8 @@ const LoginForm = ({ onLogin }: LoginFormProps) => {
     mode: 'onChange',
     reValidateMode: 'onChange',
     defaultValues: {
-      email: 'umarreactdev@gmail.com',
-      password: '123@Office'
+      email: '',
+      password: ''
     },
   });
 

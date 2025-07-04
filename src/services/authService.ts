@@ -2,7 +2,6 @@ import { LoginResponse, UserRole, User } from '../models/types';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, getDocs, deleteDoc, query, where, addDoc, orderBy } from 'firebase/firestore';
-import { v4 as uuidv4 } from 'uuid';
 import { PatientData } from '../models/types';
 
 // Mock user data - in real app, this would be your backend validation
@@ -67,7 +66,7 @@ export const registerUser = async (email: string, password: string, userData: Om
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const userAuth = userCredential.user;
     // Create user profile in Firestore
-    const userId = userAuth.uid || uuidv4();
+    const userId = userAuth.uid;
     const userProfile: User = {
       email,
       ...userData,
@@ -112,8 +111,9 @@ export const updateUser = async (uid: string, userData: Partial<User>) => {
 
 // Create a new patient in Firestore
 export const createPatient = async (patient: PatientData) => {
-  const patientId = uuidv4();
-  await setDoc(doc(db, 'patients', patientId), { ...patient, patient_id: patientId });
+  const docRef = await addDoc(collection(db, 'patients'), { ...patient });
+  const patientId = docRef.id;
+  await setDoc(doc(db, 'patients', patientId), { ...patient, patient_id: patientId }, { merge: true });
   return patientId;
 };
 

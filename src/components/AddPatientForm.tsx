@@ -23,7 +23,6 @@ import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import { PatientData, PersonalInfo, Address } from '../models/types';
 import { createPatient } from '../services/authService';
-import { v4 as uuidv4 } from 'uuid';
 
 export interface PatientFormProps {
   patient?: PatientData;
@@ -63,7 +62,7 @@ const defaultMedicalHistory = {
 };
 
 const defaultPatient: PatientData = {
-  patient_id: uuidv4(),
+  // patient_id will be set after Firestore document creation
   personal_info: defaultPersonalInfo,
   medical_history: defaultMedicalHistory,
 };

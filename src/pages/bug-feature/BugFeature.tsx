@@ -16,7 +16,6 @@ import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import { db } from '../../services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { User } from '../../models/types';
-import { v4 as uuidv4 } from 'uuid';
 import CircularProgress from '@mui/material/CircularProgress';
 
 interface FormState {
@@ -61,7 +60,6 @@ const BugFeature = ({ user }: BugFeatureProps) => {
     setLoading(true);
     try {
       await addDoc(collection(db, 'bugFeatureReports'), {
-        id: uuidv4(),
         title: form.title,
         description: form.description,
         type: tab === 0 ? 'bug' : 'feature',
