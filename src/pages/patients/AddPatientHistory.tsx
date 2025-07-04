@@ -17,7 +17,14 @@ const AddPatientHistory = () => {
 
   const handleSave = async (patient: PatientData) => {
     try {
-      await createPatient(patient);
+      // Add therapist UID if user is a therapist
+      let updatedPatient = { ...patient };
+      if (user?.role === 'Therapist' && user?.uid) {
+        updatedPatient.therapistIds = Array.isArray(patient.therapistIds)
+          ? Array.from(new Set([...patient.therapistIds, user.uid]))
+          : [user.uid];
+      }
+      await createPatient(updatedPatient);
       setSuccess('Patient created successfully!');
     } catch (err) {
       setError('Failed to save patient');

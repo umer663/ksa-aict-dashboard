@@ -1,6 +1,7 @@
 [
   {
     "patient_id": "P001",
+    "therapistIds": ["uid_amna"],
     "personal_info": {
       "first_name": "Ayesha",
       "last_name": "Khan",
@@ -49,6 +50,7 @@
   },
   {
     "patient_id": "P002",
+    "therapistIds": ["uid_ammd", "uid_therapist"],
     "personal_info": {
       "first_name": "Ali",
       "last_name": "Raza",
@@ -86,6 +88,7 @@
   },
   {
     "patient_id": "P003",
+    "therapistIds": ["uid_amna", "uid_ammd", "uid_therapist"],
     "personal_info": {
       "first_name": "Sadia",
       "last_name": "Malik",
@@ -136,6 +139,7 @@
   },
   {
     "patient_id": "P004",
+    "therapistIds": ["uid_therapist"],
     "personal_info": {
       "first_name": "Bilal",
       "last_name": "Hassan",
@@ -175,6 +179,7 @@
   },
   {
     "patient_id": "P005",
+    "therapistIds": [],
     "personal_info": {
       "first_name": "Nida",
       "last_name": "Farooq",
@@ -221,6 +226,7 @@
   },
   {
     "patient_id": "P006",
+    "therapistIds": ["uid_amna"],
     "personal_info": {
       "first_name": "Usman",
       "last_name": "Tariq",
@@ -260,6 +266,7 @@
   },
   {
     "patient_id": "P007",
+    "therapistIds": ["uid_ammd"],
     "personal_info": {
       "first_name": "Farhan",
       "last_name": "Iqbal",
@@ -299,6 +306,7 @@
   },
   {
     "patient_id": "P008",
+    "therapistIds": ["uid_therapist"],
     "personal_info": {
       "first_name": "Hina",
       "last_name": "Shah",
@@ -338,6 +346,7 @@
   },
   {
     "patient_id": "P009",
+    "therapistIds": ["uid_amna"],
     "personal_info": {
       "first_name": "Zainab",
       "last_name": "Ali",
@@ -375,6 +384,7 @@
   },
   {
     "patient_id": "P010",
+    "therapistIds": ["uid_ammd"],
     "personal_info": {
       "first_name": "Imran",
       "last_name": "Qureshi",

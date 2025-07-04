@@ -80,7 +80,16 @@ const PatientHistory = () => {
     const getPatients = async () => {
       try {
         const allPatients = await fetchAllPatients();
-        setPatients(allPatients);
+        let filteredPatients = allPatients;
+        if (user?.role === 'Therapist' && user?.uid) {
+          filteredPatients = allPatients.filter(
+            (p) => Array.isArray(p.therapistIds) && p.therapistIds.includes(user.uid)
+          );
+        } else if (user?.role !== 'SuperAdmin' && user?.role !== 'Admin') {
+          // Receptionists and others see no patients by default
+          filteredPatients = [];
+        }
+        setPatients(filteredPatients);
       } catch (error) {
         setPatients([]);
       } finally {
@@ -193,6 +202,21 @@ const PatientHistory = () => {
     setVisitSuccess(null);
     try {
       await createVisit(selectedPatient.patient_id, visitData);
+      // Add therapist UID to patient if not already present
+      if (user?.role === 'Therapist' && user?.uid) {
+        const therapistIds = Array.isArray(selectedPatient.therapistIds)
+          ? Array.from(new Set([...selectedPatient.therapistIds, user.uid]))
+          : [user.uid];
+        if (
+          !selectedPatient.therapistIds ||
+          !selectedPatient.therapistIds.includes(user.uid)
+        ) {
+          await updatePatient(selectedPatient.patient_id, {
+            ...selectedPatient,
+            therapistIds,
+          });
+        }
+      }
       setVisitSuccess('Visit added successfully!');
       const updatedVisits = await fetchVisits(selectedPatient.patient_id);
       setVisits(updatedVisits);
