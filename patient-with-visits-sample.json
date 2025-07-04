@@ -1,0 +1,426 @@
+[
+  {
+    "patient_id": "P001",
+    "personal_info": {
+      "first_name": "Ayesha",
+      "last_name": "Khan",
+      "date_of_birth": "1990-05-12",
+      "gender": "Female",
+      "contact_number": "0300-1234567",
+      "email": "ayesha.khan@example.com",
+      "address": {
+        "street": "123 Main Street",
+        "city": "Lahore",
+        "state": "Punjab",
+        "postal_code": "54000",
+        "country": "Pakistan"
+      },
+      "bloodType": "A+"
+    },
+    "medical_history": {
+      "chronic_diseases": ["Hypertension"],
+      "previous_surgeries": [],
+      "medications": [
+        {"medication_name": "Amlodipine", "dosage": "5mg", "frequency": "Once daily"}
+      ],
+      "allergies": ["Penicillin"],
+      "family_medical_history": ["Diabetes"]
+    },
+    "visits": [
+      {
+        "visit_id": "V001",
+        "visitDate": "2024-01-15",
+        "doctorId": "Dr. Ahmed",
+        "symptoms": "Fever and cough",
+        "diagnosis": "",
+        "recommendations": "Prescribed antibiotics",
+        "medications": []
+      },
+      {
+        "visit_id": "V002",
+        "visitDate": "2024-03-10",
+        "doctorId": "Dr. Ahmed",
+        "symptoms": "Follow-up",
+        "diagnosis": "",
+        "recommendations": "Condition improved",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P002",
+    "personal_info": {
+      "first_name": "Ali",
+      "last_name": "Raza",
+      "date_of_birth": "1996-11-23",
+      "gender": "Male",
+      "contact_number": "0321-9876543",
+      "email": "ali.raza@example.com",
+      "address": {
+        "street": "45 Model Town",
+        "city": "Karachi",
+        "state": "Sindh",
+        "postal_code": "75500",
+        "country": "Pakistan"
+      },
+      "bloodType": "B+"
+    },
+    "medical_history": {
+      "chronic_diseases": [],
+      "previous_surgeries": [],
+      "medications": [],
+      "allergies": [],
+      "family_medical_history": []
+    },
+    "visits": [
+      {
+        "visit_id": "V003",
+        "visitDate": "2024-02-20",
+        "doctorId": "Dr. Fatima",
+        "symptoms": "Back pain",
+        "diagnosis": "",
+        "recommendations": "Advised physiotherapy",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P003",
+    "personal_info": {
+      "first_name": "Sadia",
+      "last_name": "Malik",
+      "date_of_birth": "1983-07-30",
+      "gender": "Female",
+      "contact_number": "0333-1122334",
+      "email": "sadia.malik@example.com",
+      "address": {
+        "street": "78 Gulberg",
+        "city": "Islamabad",
+        "state": "Islamabad Capital Territory",
+        "postal_code": "44000",
+        "country": "Pakistan"
+      },
+      "bloodType": "O-"
+    },
+    "medical_history": {
+      "chronic_diseases": ["Asthma"],
+      "previous_surgeries": [
+        {"surgery_name": "Appendectomy", "surgery_date": "2010-08-15"}
+      ],
+      "medications": [
+        {"medication_name": "Salbutamol", "dosage": "2 puffs", "frequency": "As needed"}
+      ],
+      "allergies": ["Dust"],
+      "family_medical_history": ["Hypertension"]
+    },
+    "visits": [
+      {
+        "visit_id": "V004",
+        "visitDate": "2024-01-05",
+        "doctorId": "Dr. Imran",
+        "symptoms": "Headache",
+        "diagnosis": "",
+        "recommendations": "Prescribed painkillers",
+        "medications": []
+      },
+      {
+        "visit_id": "V005",
+        "visitDate": "2024-04-12",
+        "doctorId": "Dr. Imran",
+        "symptoms": "Migraine",
+        "diagnosis": "",
+        "recommendations": "MRI recommended",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P004",
+    "personal_info": {
+      "first_name": "Bilal",
+      "last_name": "Hassan",
+      "date_of_birth": "1972-03-18",
+      "gender": "Male",
+      "contact_number": "0345-5566778",
+      "email": "bilal.hassan@example.com",
+      "address": {
+        "street": "12 Canal Road",
+        "city": "Multan",
+        "state": "Punjab",
+        "postal_code": "60000",
+        "country": "Pakistan"
+      },
+      "bloodType": "AB+"
+    },
+    "medical_history": {
+      "chronic_diseases": ["Diabetes"],
+      "previous_surgeries": [],
+      "medications": [
+        {"medication_name": "Metformin", "dosage": "500mg", "frequency": "Twice daily"}
+      ],
+      "allergies": [],
+      "family_medical_history": ["Diabetes"]
+    },
+    "visits": [
+      {
+        "visit_id": "V006",
+        "visitDate": "2024-03-18",
+        "doctorId": "Dr. Sara",
+        "symptoms": "Diabetes checkup",
+        "diagnosis": "",
+        "recommendations": "Blood sugar controlled",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P005",
+    "personal_info": {
+      "first_name": "Nida",
+      "last_name": "Farooq",
+      "date_of_birth": "2001-09-14",
+      "gender": "Female",
+      "contact_number": "0312-3344556",
+      "email": "nida.farooq@example.com",
+      "address": {
+        "street": "90 Defence",
+        "city": "Peshawar",
+        "state": "Khyber Pakhtunkhwa",
+        "postal_code": "25000",
+        "country": "Pakistan"
+      },
+      "bloodType": "A-"
+    },
+    "medical_history": {
+      "chronic_diseases": [],
+      "previous_surgeries": [],
+      "medications": [],
+      "allergies": ["Peanuts"],
+      "family_medical_history": []
+    },
+    "visits": [
+      {
+        "visit_id": "V007",
+        "visitDate": "2024-02-28",
+        "doctorId": "Dr. Kamran",
+        "symptoms": "Allergy",
+        "diagnosis": "",
+        "recommendations": "Antihistamines prescribed",
+        "medications": []
+      },
+      {
+        "visit_id": "V008",
+        "visitDate": "2024-05-01",
+        "doctorId": "Dr. Kamran",
+        "symptoms": "Skin rash",
+        "diagnosis": "",
+        "recommendations": "Topical cream given",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P006",
+    "personal_info": {
+      "first_name": "Usman",
+      "last_name": "Tariq",
+      "date_of_birth": "1987-12-02",
+      "gender": "Male",
+      "contact_number": "0301-9988776",
+      "email": "usman.tariq@example.com",
+      "address": {
+        "street": "56 Saddar",
+        "city": "Quetta",
+        "state": "Balochistan",
+        "postal_code": "87300",
+        "country": "Pakistan"
+      },
+      "bloodType": "O+"
+    },
+    "medical_history": {
+      "chronic_diseases": ["High Cholesterol"],
+      "previous_surgeries": [],
+      "medications": [
+        {"medication_name": "Atorvastatin", "dosage": "10mg", "frequency": "Once daily"}
+      ],
+      "allergies": [],
+      "family_medical_history": ["Heart Disease"]
+    },
+    "visits": [
+      {
+        "visit_id": "V009",
+        "visitDate": "2024-01-22",
+        "doctorId": "Dr. Yasir",
+        "symptoms": "Chest pain",
+        "diagnosis": "",
+        "recommendations": "ECG normal",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P007",
+    "personal_info": {
+      "first_name": "Farhan",
+      "last_name": "Iqbal",
+      "date_of_birth": "1992-04-10",
+      "gender": "Male",
+      "contact_number": "0342-2233445",
+      "email": "farhan.iqbal@example.com",
+      "address": {
+        "street": "22 Satellite Town",
+        "city": "Rawalpindi",
+        "state": "Punjab",
+        "postal_code": "46000",
+        "country": "Pakistan"
+      },
+      "bloodType": "B-"
+    },
+    "medical_history": {
+      "chronic_diseases": ["Thyroid Disorder"],
+      "previous_surgeries": [],
+      "medications": [
+        {"medication_name": "Levothyroxine", "dosage": "50mcg", "frequency": "Once daily"}
+      ],
+      "allergies": [],
+      "family_medical_history": ["Thyroid Disorder"]
+    },
+    "visits": [
+      {
+        "visit_id": "V010",
+        "visitDate": "2024-03-05",
+        "doctorId": "Dr. Sana",
+        "symptoms": "Routine checkup",
+        "diagnosis": "",
+        "recommendations": "Thyroid levels normal",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P008",
+    "personal_info": {
+      "first_name": "Hina",
+      "last_name": "Shah",
+      "date_of_birth": "1985-08-19",
+      "gender": "Female",
+      "contact_number": "0315-6677889",
+      "email": "hina.shah@example.com",
+      "address": {
+        "street": "11 Clifton",
+        "city": "Karachi",
+        "state": "Sindh",
+        "postal_code": "75600",
+        "country": "Pakistan"
+      },
+      "bloodType": "AB-"
+    },
+    "medical_history": {
+      "chronic_diseases": ["Arthritis"],
+      "previous_surgeries": [],
+      "medications": [
+        {"medication_name": "Ibuprofen", "dosage": "400mg", "frequency": "As needed"}
+      ],
+      "allergies": ["Latex"],
+      "family_medical_history": []
+    },
+    "visits": [
+      {
+        "visit_id": "V011",
+        "visitDate": "2024-02-14",
+        "doctorId": "Dr. Khalid",
+        "symptoms": "Joint pain",
+        "diagnosis": "",
+        "recommendations": "Advised exercise",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P009",
+    "personal_info": {
+      "first_name": "Zainab",
+      "last_name": "Ali",
+      "date_of_birth": "1999-06-25",
+      "gender": "Female",
+      "contact_number": "0320-4455667",
+      "email": "zainab.ali@example.com",
+      "address": {
+        "street": "77 Johar Town",
+        "city": "Lahore",
+        "state": "Punjab",
+        "postal_code": "54782",
+        "country": "Pakistan"
+      },
+      "bloodType": "A+"
+    },
+    "medical_history": {
+      "chronic_diseases": [],
+      "previous_surgeries": [],
+      "medications": [],
+      "allergies": ["Shellfish"],
+      "family_medical_history": ["Asthma"]
+    },
+    "visits": [
+      {
+        "visit_id": "V012",
+        "visitDate": "2024-04-20",
+        "doctorId": "Dr. Noman",
+        "symptoms": "Stomach ache",
+        "diagnosis": "",
+        "recommendations": "Prescribed antacids",
+        "medications": []
+      }
+    ]
+  },
+  {
+    "patient_id": "P010",
+    "personal_info": {
+      "first_name": "Imran",
+      "last_name": "Qureshi",
+      "date_of_birth": "1978-10-11",
+      "gender": "Male",
+      "contact_number": "0308-9988775",
+      "email": "imran.qureshi@example.com",
+      "address": {
+        "street": "33 University Road",
+        "city": "Faisalabad",
+        "state": "Punjab",
+        "postal_code": "38000",
+        "country": "Pakistan"
+      },
+      "bloodType": "O-"
+    },
+    "medical_history": {
+      "chronic_diseases": ["COPD"],
+      "previous_surgeries": [
+        {"surgery_name": "Gallbladder removal", "surgery_date": "2015-03-22"}
+      ],
+      "medications": [
+        {"medication_name": "Tiotropium", "dosage": "18mcg", "frequency": "Once daily"}
+      ],
+      "allergies": [],
+      "family_medical_history": ["COPD"]
+    },
+    "visits": [
+      {
+        "visit_id": "V013",
+        "visitDate": "2024-03-30",
+        "doctorId": "Dr. Asad",
+        "symptoms": "Breathing difficulty",
+        "diagnosis": "",
+        "recommendations": "Inhaler prescribed",
+        "medications": []
+      },
+      {
+        "visit_id": "V014",
+        "visitDate": "2024-05-10",
+        "doctorId": "Dr. Asad",
+        "symptoms": "Routine checkup",
+        "diagnosis": "",
+        "recommendations": "Stable condition",
+        "medications": []
+      }
+    ]
+  }
+] 

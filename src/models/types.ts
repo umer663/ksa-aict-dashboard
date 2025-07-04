@@ -86,6 +86,20 @@ export interface PatientData {
   medical_history: MedicalHistory;
 }
 
+// Visit related interfaces
+export interface Visit {
+  visit_id: string;
+  date: string; // ISO date string
+  reason: string;
+  doctor: string;
+  notes: string;
+}
+
+// Patient with visits
+export interface PatientWithVisits extends PatientData {
+  visits: Visit[];
+}
+
 // Component Props interfaces
 export interface LoginFormProps {
   onLogin: (user: User) => void;
