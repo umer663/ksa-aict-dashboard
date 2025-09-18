@@ -84,18 +84,24 @@ const Sidebar = ({ user }: SidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Build menu items dynamically from config
+  // Build menu items dynamically from config, excluding bug-feature
   let filteredMenuItems = [];
   if (nonRemoveableUsers.includes(user.email)) {
-    filteredMenuItems = pages.map(page => ({
-      text: page.label,
-      icon: iconMap[page.key] || <DashboardIcon />,
-      path: `/${page.key}`,
-      key: page.key,
-    }));
+    filteredMenuItems = pages
+      .filter(page => page.key !== 'bug-feature') // Remove bug-feature from sidebar
+      .map(page => ({
+        text: page.label,
+        icon: iconMap[page.key] || <DashboardIcon />,
+        path: `/${page.key}`,
+        key: page.key,
+      }));
   } else {
     filteredMenuItems = pages
-      .filter(page => user.permissions?.[page.key as string]?.view === true && page.key !== 'topics')
+      .filter(page => 
+        user.permissions?.[page.key as string]?.view === true && 
+        page.key !== 'topics' && 
+        page.key !== 'bug-feature' // Remove bug-feature from sidebar
+      )
       .map(page => ({
         text: page.label,
         icon: iconMap[page.key] || <DashboardIcon />,

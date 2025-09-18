@@ -16,11 +16,14 @@ import {
   AccountCircle,
   Logout,
   Settings,
+  BugReport,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import { removeAuthToken } from '../services/authService';
 import { createTheme } from '@mui/material/styles';
 import ProfileModal from './ProfileModal';
 import { User } from '../models/types';
+import { useAppConfig } from '../context/AppConfigContext';
 import logo from '../assets/logo.png';
 
 interface NavbarProps {
@@ -57,6 +60,9 @@ const DRAWER_WIDTH = 280; // Adjust width as needed
 const Navbar = ({ user, onLogout }: NavbarProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const appConfig = useAppConfig();
+  const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
 
   // Use user object for display
   const userData = {
@@ -66,6 +72,9 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
     profileImage: '',
     role: user.role,
   };
+
+  // Check if user has permission to access bug-feature
+  const canAccessBugFeature = nonRemoveableUsers.includes(user.email) || user.permissions?.['bug-feature']?.view === true;
 
   const handleOpenMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -78,6 +87,11 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
   const handleOpenProfile = () => {
     handleCloseMenu();
     setProfileModalOpen(true);
+  };
+
+  const handleBugFeatureClick = () => {
+    handleCloseMenu();
+    navigate('/bug-feature');
   };
 
   const handleLogout = () => {
@@ -95,59 +109,68 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
           boxShadow: '0px 2px 4px -1px rgba(0,0,0,0.1)',
         }}
       >
-        <Container maxWidth="xl">
-          <Toolbar disableGutters>
-            {/* Logo/Brand */}
-            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-              <img
-                src={logo}
-                alt="KSA Institute of Colour Therapy Logo"
-                style={{ height: 44, width: 'auto', marginRight: 16, display: 'block' }}
-              />
-            </Box>
+        <Toolbar disableGutters sx={{ px: 3 }}>
+          {/* Logo/Brand */}
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <img
+              src={logo}
+              alt="KSA Institute of Colour Therapy Logo"
+              style={{ height: 44, width: 'auto', marginRight: 16, display: 'block' }}
+            />
+          </Box>
 
-            {/* Profile Section */}
-            <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, mr: 1 }}>
-                {user.email}
-              </Typography>
-              <Tooltip title="Open settings">
-                <IconButton onClick={handleOpenMenu} sx={{ p: 0, ml: 2 }}>
-                  <Avatar sx={{ bgcolor: 'secondary.main' }}>
-                    {user.email.charAt(0).toUpperCase()}
-                  </Avatar>
-                </IconButton>
-              </Tooltip>
-            </Box>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleCloseMenu}
-            >
-              {/* <MenuItem onClick={handleOpenProfile}>
-                <AccountCircle sx={{ mr: 1.5 }} /> Profile
-              </MenuItem> */}
-              {/* <MenuItem onClick={handleCloseMenu}>
-                <Settings sx={{ mr: 1.5 }} /> Settings
-              </MenuItem> */}
-              <Divider />
-              <MenuItem onClick={handleLogout}>
-                <Logout sx={{ mr: 1.5 }} /> Logout
+          {/* Profile Section */}
+          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ color: 'white', fontWeight: 500, mr: 1 }}>
+              {user.email}
+            </Typography>
+            <Tooltip title="Open settings">
+              <IconButton onClick={handleOpenMenu} sx={{ p: 0, ml: 2 }}>
+                <Avatar sx={{ bgcolor: 'secondary.main' }}>
+                  {user.email.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Menu
+            sx={{ 
+              mt: '45px',
+              '& .MuiPaper-root': {
+                minWidth: 200, // Fixed width to prevent flicker
+              }
+            }}
+            id="menu-appbar"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            keepMounted={false}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            open={Boolean(anchorEl)}
+            onClose={handleCloseMenu}
+            disableScrollLock={true}
+          >
+            {/* <MenuItem onClick={handleOpenProfile}>
+              <AccountCircle sx={{ mr: 1.5 }} /> Profile
+            </MenuItem> */}
+            {/* <MenuItem onClick={handleCloseMenu}>
+              <Settings sx={{ mr: 1.5 }} /> Settings
+            </MenuItem> */}
+            {canAccessBugFeature && (
+              <MenuItem onClick={handleBugFeatureClick}>
+                <BugReport sx={{ mr: 1.5 }} /> Bug / Feature
               </MenuItem>
-            </Menu>
-          </Toolbar>
-        </Container>
+            )}
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <Logout sx={{ mr: 1.5 }} /> Logout
+            </MenuItem>
+          </Menu>
+        </Toolbar>
       </AppBar>
 
       <ProfileModal
