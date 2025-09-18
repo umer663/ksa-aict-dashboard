@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
           fontWeight: 400
         }}
       >
-        © {currentYear} Made with ❤️ by Team AICT. All rights reserved.
+        © {currentYear} Made with ❤️ by Team KSAICT. All rights reserved.
       </Typography>
     </FooterContainer>
   );

@@ -4,13 +4,8 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon, Add as AddIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { fetchAllDoctors } from '../services/authService';
+import { Medication } from '../models/types';
 import dayjs from 'dayjs';
-
-export interface Medication {
-  name: string;
-  dosage: string;
-  frequency: string;
-}
 
 export interface VisitFormProps {
   onSave: (visit: any) => Promise<void>;
@@ -19,28 +14,27 @@ export interface VisitFormProps {
   error?: string;
   success?: string;
   onClose?: () => void;
-  user: any; // Add user prop
-  canCreate: boolean; // Add canCreate prop
+  user: any;
+  canCreate: boolean;
 }
 
-const defaultMedication: Medication = { name: '', dosage: '', frequency: '' };
+const defaultMedication: Medication = { medication_name: '', dosage: '', frequency: '' };
 
 const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = false, error = '', success = '', onClose, user, canCreate }) => {
   const [form, setForm] = useState({
+    visit_id: '', // Added visit_id field to match sample data
     visitDate: dayjs().format('YYYY-MM-DD'),
     doctorId: '',
     symptoms: '',
     diagnosis: '',
     recommendations: '',
     medications: [defaultMedication],
-    followUpDate: '',
   });
   const [doctors, setDoctors] = useState<{ uid: string; name: string }[]>([]);
 
   useEffect(() => {
     fetchAllDoctors().then((allDoctors) => {
       if (user?.role === 'Therapist') {
-        // Only show the logged-in therapist
         const therapist = allDoctors.find((doc: any) => doc.email === user.email);
         setDoctors(therapist ? [{ uid: therapist.uid, name: therapist.name }] : []);
         setForm(prev => ({ ...prev, doctorId: therapist ? therapist.uid : '' }));
@@ -81,25 +75,21 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave(form);
+    // Generate visit_id if not provided
+    const visitData = {
+      ...form,
+      visit_id: form.visit_id || `V${Date.now()}`, // Generate unique visit_id if not provided
+    };
+    await onSave(visitData);
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 800, mx: 'auto', mt: 2 }}>
-      <Paper sx={{ p: 3, mb: 4, position: 'relative' }}>
+    <Box component="form" onSubmit={handleSubmit}>
+      <Paper sx={{ p: 3, mb: 2 }}>
         <Typography variant="h6" gutterBottom color="primary">
-          Add New Visit / Encounter
+          Add New Visit
         </Typography>
-        {lastVisit && (
-          <Box sx={{ mb: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary">Last Visit Summary:</Typography>
-            <Typography variant="body2"><b>Date:</b> {lastVisit.visitDate}</Typography>
-            <Typography variant="body2"><b>Doctor:</b> {lastVisit.doctorName || lastVisit.doctorId}</Typography>
-            <Typography variant="body2"><b>Diagnosis:</b> {lastVisit.diagnosis}</Typography>
-            <Typography variant="body2"><b>Recommendations:</b> {lastVisit.recommendations}</Typography>
-            <Typography variant="body2"><b>Medications:</b> {lastVisit.medications?.map((m: Medication) => `${m.name} (${m.dosage}, ${m.frequency})`).join(', ')}</Typography>
-          </Box>
-        )}
+        
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -111,24 +101,29 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
               margin="normal"
               InputLabelProps={{ shrink: true }}
               required
+              disabled={!canCreate}
             />
           </Grid>
+          
           <Grid item xs={12} sm={6}>
             <TextField
-              select
               label="Doctor"
+              select
               value={form.doctorId}
               onChange={e => handleChange('doctorId', e.target.value)}
               fullWidth
               margin="normal"
               required
-              disabled={user?.role === 'Therapist'} // Therapist cannot change doctor
+              disabled={!canCreate}
             >
-              {doctors.map(doc => (
-                <MenuItem key={doc.uid} value={doc.uid}>{doc.name}</MenuItem>
+              {doctors.map((doctor) => (
+                <MenuItem key={doctor.uid} value={doctor.uid}>
+                  {doctor.name}
+                </MenuItem>
               ))}
             </TextField>
           </Grid>
+          
           <Grid item xs={12}>
             <TextField
               label="Symptoms"
@@ -137,10 +132,12 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
               fullWidth
               margin="normal"
               multiline
-              minRows={2}
+              rows={3}
               required
+              disabled={!canCreate}
             />
           </Grid>
+          
           <Grid item xs={12}>
             <TextField
               label="Diagnosis"
@@ -149,10 +146,11 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
               fullWidth
               margin="normal"
               multiline
-              minRows={2}
-              required
+              rows={2}
+              disabled={!canCreate}
             />
           </Grid>
+          
           <Grid item xs={12}>
             <TextField
               label="Recommendations"
@@ -161,70 +159,93 @@ const VisitForm: React.FC<VisitFormProps> = ({ onSave, lastVisit, loading = fals
               fullWidth
               margin="normal"
               multiline
-              minRows={2}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="subtitle2" sx={{ mt: 2 }}>Medications</Typography>
-            {form.medications.map((med, idx) => (
-              <Grid container spacing={1} key={idx} alignItems="center" sx={{ mb: 1 }}>
-                <Grid item xs={3}>
-                  <TextField
-                    label="Name"
-                    value={med.name}
-                    onChange={e => handleMedicationChange(idx, 'name', e.target.value)}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField
-                    label="Dosage"
-                    value={med.dosage}
-                    onChange={e => handleMedicationChange(idx, 'dosage', e.target.value)}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField
-                    label="Frequency"
-                    value={med.frequency}
-                    onChange={e => handleMedicationChange(idx, 'frequency', e.target.value)}
-                    fullWidth
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <IconButton onClick={() => removeMedication(idx)} disabled={form.medications.length === 1}>
-                    <RemoveIcon />
-                  </IconButton>
-                  {idx === form.medications.length - 1 && (
-                    <IconButton onClick={addMedication}>
-                      <AddIcon />
-                    </IconButton>
-                  )}
-                </Grid>
-              </Grid>
-            ))}
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Follow-up Date"
-              type="date"
-              value={form.followUpDate}
-              onChange={e => handleChange('followUpDate', e.target.value)}
-              fullWidth
-              margin="normal"
-              InputLabelProps={{ shrink: true }}
+              rows={3}
+              required
+              disabled={!canCreate}
             />
           </Grid>
         </Grid>
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={loading || !canCreate}>
+
+        {/* Medications Section */}
+        <Typography variant="h6" sx={{ mt: 3, mb: 2 }} color="primary">
+          Medications
+        </Typography>
+        
+        {form.medications.map((medication, idx) => (
+          <Grid container spacing={2} key={idx} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                label="Medication Name"
+                value={medication.medication_name}
+                onChange={e => handleMedicationChange(idx, 'medication_name', e.target.value)}
+                fullWidth
+                margin="normal"
+                disabled={!canCreate}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                label="Dosage"
+                value={medication.dosage}
+                onChange={e => handleMedicationChange(idx, 'dosage', e.target.value)}
+                fullWidth
+                margin="normal"
+                disabled={!canCreate}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                label="Frequency"
+                value={medication.frequency}
+                onChange={e => handleMedicationChange(idx, 'frequency', e.target.value)}
+                fullWidth
+                margin="normal"
+                disabled={!canCreate}
+              />
+            </Grid>
+            <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center' }}>
+              {canCreate && (
+                <IconButton
+                  onClick={() => removeMedication(idx)}
+                  color="error"
+                  disabled={form.medications.length === 1}
+                >
+                  <RemoveIcon />
+                </IconButton>
+              )}
+            </Grid>
+          </Grid>
+        ))}
+        
+        {canCreate && (
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addMedication}
+            variant="outlined"
+            sx={{ mb: 2 }}
+          >
+            Add Medication
+          </Button>
+        )}
+      </Paper>
+
+      {canCreate && (
+        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+          {onClose && (
+            <Button onClick={onClose} variant="outlined">
+              Cancel
+            </Button>
+          )}
+          <Button
+            type="submit"
+            variant="contained"
+            startIcon={<SaveIcon />}
+            disabled={loading}
+          >
             {loading ? 'Saving...' : 'Save Visit'}
           </Button>
         </Box>
-        {success && <Typography color="success.main" sx={{ mt: 2 }}>{success}</Typography>}
-        {error && <Typography color="error.main" sx={{ mt: 2 }}>{error}</Typography>}
-      </Paper>
+      )}
     </Box>
   );
 };

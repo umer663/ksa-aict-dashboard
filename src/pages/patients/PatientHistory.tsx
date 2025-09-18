@@ -228,6 +228,11 @@ const PatientHistory = () => {
     }
   };
 
+  const handleEditPatient = (patient: PatientData) => {
+    setSelectedPatient(patient); // Navigate to patient detail view
+    // Remove the editingPatient state since we're not using a dialog anymore
+  };
+
   const filteredPatients = patients.filter((patient) => {
     const name = `${patient.personal_info?.first_name || ''} ${patient.personal_info?.last_name || ''}`.toLowerCase();
     const id = patient.patient_id?.toLowerCase() || '';
@@ -292,7 +297,7 @@ const PatientHistory = () => {
                     <IconButton
                       edge="end"
                       aria-label="edit"
-                      onClick={() => setEditingPatient(patient)}
+                      onClick={() => handleEditPatient(patient)}
                     >
                       <EditIcon />
                     </IconButton>
@@ -323,7 +328,7 @@ const PatientHistory = () => {
         </Paper>
       ) : (
         <>
-          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
               variant="outlined"
               startIcon={<ArrowBackIcon />}
@@ -331,13 +336,26 @@ const PatientHistory = () => {
             >
               Back to List
             </Button>
-            <Button
-              variant="outlined"
-              onClick={() => setVisitFormOpen(true)}
-            >
-              Add New Visit
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {canEdit && (
+                <Button
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={() => setEditingPatient(selectedPatient)}
+                >
+                  Edit Patient Info
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                onClick={() => setVisitFormOpen(true)}
+                disabled={!canCreate}
+              >
+                Add New Visit
+              </Button>
+            </Box>
           </Box>
+
           {/* Patient Demographics */}
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" color="primary" gutterBottom>
@@ -357,6 +375,37 @@ const PatientHistory = () => {
             <Typography><b>Email:</b> {selectedPatient.personal_info?.email || ''}</Typography>
             <Typography><b>Address:</b> {selectedPatient.personal_info?.address?.street || ''}, {selectedPatient.personal_info?.address?.city || ''}, {selectedPatient.personal_info?.address?.country || ''}</Typography>
           </Paper>
+
+          {/* Medical History */}
+          <Paper sx={{ p: 3, mb: 3 }}>
+            <Typography variant="h6" color="primary" gutterBottom>
+              Medical History
+            </Typography>
+            <Typography><b>Chronic Diseases:</b> {selectedPatient.medical_history?.chronic_diseases?.join(', ') || 'None'}</Typography>
+            <Typography><b>Allergies:</b> {selectedPatient.medical_history?.allergies?.join(', ') || 'None'}</Typography>
+            <Typography><b>Family Medical History:</b> {selectedPatient.medical_history?.family_medical_history?.join(', ') || 'None'}</Typography>
+            {selectedPatient.medical_history?.medications && selectedPatient.medical_history.medications.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2"><b>Current Medications:</b></Typography>
+                {selectedPatient.medical_history.medications.map((med, idx) => (
+                  <Typography key={idx} variant="body2">
+                    • {med.medication_name} - {med.dosage} ({med.frequency})
+                  </Typography>
+                ))}
+              </Box>
+            )}
+            {selectedPatient.medical_history?.previous_surgeries && selectedPatient.medical_history.previous_surgeries.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="subtitle2"><b>Previous Surgeries:</b></Typography>
+                {selectedPatient.medical_history.previous_surgeries.map((surgery, idx) => (
+                  <Typography key={idx} variant="body2">
+                    • {surgery.surgery_name} ({surgery.surgery_date})
+                  </Typography>
+                ))}
+              </Box>
+            )}
+          </Paper>
+
           {/* Visit History */}
           <Typography variant="h6" sx={{ mt: 3, mb: 2 }}>Visit History</Typography>
           {visitLoading ? (
@@ -367,44 +416,23 @@ const PatientHistory = () => {
             ) : (
               <List>
                 {visits.map((visit, idx) => (
-                  <Paper key={visit.id} sx={{ mb: 2, p: 2 }}>
+                  <Paper key={visit.id || idx} sx={{ mb: 2, p: 2 }}>
                     <Typography variant="subtitle2">
                       {visit.visitDate || ''} — Doctor: {doctorMap[visit.doctorId] || visit.doctorId || ''}
                     </Typography>
-                    {visit.followUpDate && (
-                      <Typography variant="body2"><b>Follow-up Date:</b> {visit.followUpDate}</Typography>
-                    )}
                     <Typography variant="body2"><b>Symptoms:</b> {visit.symptoms || ''}</Typography>
                     <Typography variant="body2"><b>Diagnosis:</b> {visit.diagnosis || ''}</Typography>
                     <Typography variant="body2"><b>Recommendations:</b> {visit.recommendations || ''}</Typography>
-                    <Typography variant="body2"><b>Medications:</b> {Array.isArray(visit.medications) ? visit.medications.map((m: any) => `${m.name || m.medication_name || ''} (${m.dosage || ''}, ${m.frequency || ''})`).join(', ') : ''}</Typography>
+                    {visit.medications && visit.medications.length > 0 && (
+                      <Typography variant="body2">
+                        <b>Medications:</b> {visit.medications.map((m: any) => `${m.medication_name || m.name || ''} (${m.dosage || ''}, ${m.frequency || ''})`).join(', ')}
+                      </Typography>
+                    )}
                   </Paper>
                 ))}
               </List>
             )
           )}
-          {/* Visit Form Dialog */}
-          <Dialog open={visitFormOpen} onClose={() => setVisitFormOpen(false)} maxWidth="md" fullWidth>
-            <Box sx={{ position: 'relative' }}>
-              <IconButton
-                aria-label="Close Add Visit"
-                onClick={() => setVisitFormOpen(false)}
-                sx={{ position: 'absolute', top: 8, right: 8, zIndex: 1 }}
-              >
-                &times;
-              </IconButton>
-              <VisitForm
-                onSave={handleAddVisit}
-                lastVisit={visits[0]}
-                loading={visitLoading}
-                error={visitError || undefined}
-                success={visitSuccess || undefined}
-                onClose={() => setVisitFormOpen(false)}
-                user={user}
-                canCreate={canCreate}
-              />
-            </Box>
-          </Dialog>
         </>
       )}
 
@@ -434,7 +462,7 @@ const PatientHistory = () => {
         </Alert>
       </Snackbar>
 
-      {/* Edit Patient Dialog */}
+      {/* Edit Patient Dialog - Keep this for editing basic patient info */}
       <Dialog
         open={!!editingPatient}
         onClose={() => setEditingPatient(null)}

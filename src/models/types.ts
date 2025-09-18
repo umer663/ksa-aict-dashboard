@@ -90,10 +90,12 @@ export interface PatientData {
 // Visit related interfaces
 export interface Visit {
   visit_id: string;
-  date: string; // ISO date string
-  reason: string;
-  doctor: string;
-  notes: string;
+  visitDate: string; // Changed from 'date' to 'visitDate' to match sample
+  doctorId: string; // Changed from 'doctor' to 'doctorId' to match sample
+  symptoms: string; // Changed from 'reason' to 'symptoms' to match sample
+  diagnosis: string; // Added diagnosis field to match sample
+  recommendations: string; // Changed from 'notes' to 'recommendations' to match sample
+  medications: Medication[]; // Added medications array to match sample
 }
 
 // Patient with visits

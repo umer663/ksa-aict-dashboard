@@ -16,12 +16,13 @@ import {
   Alert,
   Snackbar,
   FormHelperText,
+  IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate, useOutletContext } from 'react-router-dom';
-import { Add as AddIcon, Save as SaveIcon } from '@mui/icons-material';
+import { Add as AddIcon, Save as SaveIcon, Remove as RemoveIcon } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
-import { PatientData, PersonalInfo, Address } from '../models/types';
+import { PatientData, PersonalInfo, Address, Medication, Surgery } from '../models/types';
 import { createPatient } from '../services/authService';
 
 export interface PatientFormProps {
@@ -42,6 +43,7 @@ const defaultAddress: Address = {
   postal_code: '',
   country: '',
 };
+
 const defaultPersonalInfo: PersonalInfo = {
   first_name: '',
   last_name: '',
@@ -50,7 +52,18 @@ const defaultPersonalInfo: PersonalInfo = {
   contact_number: '',
   email: '',
   address: defaultAddress,
-  bloodType: '', // Add default value for bloodType
+  bloodType: '',
+};
+
+const defaultMedication: Medication = {
+  medication_name: '',
+  dosage: '',
+  frequency: '',
+};
+
+const defaultSurgery: Surgery = {
+  surgery_name: '',
+  surgery_date: '',
 };
 
 const defaultMedicalHistory = {
@@ -62,7 +75,6 @@ const defaultMedicalHistory = {
 };
 
 const defaultPatient: PatientData = {
-  // patient_id will be set after Firestore document creation
   personal_info: defaultPersonalInfo,
   medical_history: defaultMedicalHistory,
 };
@@ -100,6 +112,80 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
     }));
   };
 
+  const handleMedicalHistoryChange = (field: keyof typeof defaultMedicalHistory, value: any) => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleMedicationChange = (idx: number, field: keyof Medication, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        medications: prev.medical_history.medications.map((med, i) =>
+          i === idx ? { ...med, [field]: value } : med
+        ),
+      },
+    }));
+  };
+
+  const addMedication = () => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        medications: [...prev.medical_history.medications, defaultMedication],
+      },
+    }));
+  };
+
+  const removeMedication = (idx: number) => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        medications: prev.medical_history.medications.filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
+  const handleSurgeryChange = (idx: number, field: keyof Surgery, value: string) => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        previous_surgeries: prev.medical_history.previous_surgeries.map((surgery, i) =>
+          i === idx ? { ...surgery, [field]: value } : surgery
+        ),
+      },
+    }));
+  };
+
+  const addSurgery = () => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        previous_surgeries: [...prev.medical_history.previous_surgeries, defaultSurgery],
+      },
+    }));
+  };
+
+  const removeSurgery = (idx: number) => {
+    setForm((prev) => ({
+      ...prev,
+      medical_history: {
+        ...prev.medical_history,
+        previous_surgeries: prev.medical_history.previous_surgeries.filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError('');
@@ -113,7 +199,8 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
   };
 
   return (
-    <Box ref={ref} component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1000, mx: 'auto', mt: 4 }}>
+    <Box ref={ref} component="form" onSubmit={handleSubmit} sx={{ maxWidth: 1200, mx: 'auto', mt: 4 }}>
+      {/* Personal Information Section */}
       <Paper sx={{ p: 3, mb: 4, position: 'relative' }}>
         {mode === 'edit' && onClose && (
           <Button
@@ -125,7 +212,7 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
           </Button>
         )}
         <Typography variant="h6" gutterBottom color="primary">
-          {mode === 'add' ? 'Add New Patient' : mode === 'edit' ? 'Edit Patient' : 'Patient Details'}
+          Personal Information
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={4}>
@@ -166,13 +253,18 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               label="Gender"
+              select
               value={form.personal_info.gender}
               onChange={e => handlePersonalInfoChange('gender', e.target.value)}
               fullWidth
               margin="normal"
               required
               disabled={mode === 'view'}
-            />
+            >
+              <MenuItem value="Male">Male</MenuItem>
+              <MenuItem value="Female">Female</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </TextField>
           </Grid>
           <Grid item xs={12} sm={6} md={4}>
             <TextField
@@ -187,12 +279,33 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
           <Grid item xs={12} sm={6} md={4}>
             <TextField
               label="Email"
+              type="email"
               value={form.personal_info.email}
               onChange={e => handlePersonalInfoChange('email', e.target.value)}
               fullWidth
               margin="normal"
               disabled={mode === 'view'}
             />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              label="Blood Type"
+              select
+              value={form.personal_info.bloodType || ''}
+              onChange={e => handlePersonalInfoChange('bloodType', e.target.value)}
+              fullWidth
+              margin="normal"
+              disabled={mode === 'view'}
+            >
+              <MenuItem value="A+">A+</MenuItem>
+              <MenuItem value="A-">A-</MenuItem>
+              <MenuItem value="B+">B+</MenuItem>
+              <MenuItem value="B-">B-</MenuItem>
+              <MenuItem value="AB+">AB+</MenuItem>
+              <MenuItem value="AB-">AB-</MenuItem>
+              <MenuItem value="O+">O+</MenuItem>
+              <MenuItem value="O-">O-</MenuItem>
+            </TextField>
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -244,29 +357,192 @@ const PatientForm = forwardRef<HTMLDivElement, PatientFormProps>(({ patient, mod
               disabled={mode === 'view'}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <TextField
-              label="Blood Type"
-              value={form.personal_info.bloodType || ''}
-              onChange={e => handlePersonalInfoChange('bloodType', e.target.value)}
-              fullWidth
-              margin="normal"
-              placeholder="e.g. A+, O-, etc."
-              required
-              disabled={mode === 'view'}
-            />
-          </Grid>
         </Grid>
-        {mode !== 'view' && (
+      </Paper>
+
+      {/* Medical History Section */}
+      <Paper sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom color="primary">
+          Medical History
+        </Typography>
+        
+        {/* Chronic Diseases */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Chronic Diseases
+          </Typography>
+          <TextField
+            label="Enter chronic diseases (comma-separated)"
+            value={form.medical_history.chronic_diseases.join(', ')}
+            onChange={e => handleMedicalHistoryChange('chronic_diseases', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+            fullWidth
+            margin="normal"
+            placeholder="e.g. Diabetes, Hypertension, Asthma"
+            disabled={mode === 'view'}
+          />
+        </Box>
+
+        {/* Allergies */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Allergies
+          </Typography>
+          <TextField
+            label="Enter allergies (comma-separated)"
+            value={form.medical_history.allergies.join(', ')}
+            onChange={e => handleMedicalHistoryChange('allergies', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+            fullWidth
+            margin="normal"
+            placeholder="e.g. Penicillin, Latex, Shellfish"
+            disabled={mode === 'view'}
+          />
+        </Box>
+
+        {/* Family Medical History */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>
+            Family Medical History
+          </Typography>
+          <TextField
+            label="Enter family medical history (comma-separated)"
+            value={form.medical_history.family_medical_history.join(', ')}
+            onChange={e => handleMedicalHistoryChange('family_medical_history', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
+            fullWidth
+            margin="normal"
+            placeholder="e.g. Diabetes, Heart Disease, Cancer"
+            disabled={mode === 'view'}
+          />
+        </Box>
+
+        {/* Current Medications */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Current Medications
+          </Typography>
+          {form.medical_history.medications.map((medication, idx) => (
+            <Grid container spacing={2} key={idx} sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Medication Name"
+                  value={medication.medication_name}
+                  onChange={e => handleMedicationChange(idx, 'medication_name', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  disabled={mode === 'view'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  label="Dosage"
+                  value={medication.dosage}
+                  onChange={e => handleMedicationChange(idx, 'dosage', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  disabled={mode === 'view'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  label="Frequency"
+                  value={medication.frequency}
+                  onChange={e => handleMedicationChange(idx, 'frequency', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  disabled={mode === 'view'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center' }}>
+                {mode !== 'view' && (
+                  <IconButton
+                    onClick={() => removeMedication(idx)}
+                    color="error"
+                    disabled={form.medical_history.medications.length === 1}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                )}
+              </Grid>
+            </Grid>
+          ))}
+          {mode !== 'view' && (
+            <Button
+              startIcon={<AddIcon />}
+              onClick={addMedication}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            >
+              Add Medication
+            </Button>
+          )}
+        </Box>
+
+        {/* Previous Surgeries */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Previous Surgeries
+          </Typography>
+          {form.medical_history.previous_surgeries.map((surgery, idx) => (
+            <Grid container spacing={2} key={idx} sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Surgery Name"
+                  value={surgery.surgery_name}
+                  onChange={e => handleSurgeryChange(idx, 'surgery_name', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  disabled={mode === 'view'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <TextField
+                  label="Surgery Date"
+                  type="date"
+                  value={surgery.surgery_date}
+                  onChange={e => handleSurgeryChange(idx, 'surgery_date', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  InputLabelProps={{ shrink: true }}
+                  disabled={mode === 'view'}
+                />
+              </Grid>
+              <Grid item xs={12} sm={2} sx={{ display: 'flex', alignItems: 'center' }}>
+                {mode !== 'view' && (
+                  <IconButton
+                    onClick={() => removeSurgery(idx)}
+                    color="error"
+                    disabled={form.medical_history.previous_surgeries.length === 1}
+                  >
+                    <RemoveIcon />
+                  </IconButton>
+                )}
+              </Grid>
+            </Grid>
+          ))}
+          {mode !== 'view' && (
+            <Button
+              startIcon={<AddIcon />}
+              onClick={addSurgery}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            >
+              Add Surgery
+            </Button>
+          )}
+        </Box>
+      </Paper>
+
+      {/* Submit Button */}
+      {mode !== 'view' && (
         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
           <Button type="submit" variant="contained" size="large" startIcon={<SaveIcon />} disabled={saving || !canCreateOrUpdate}>
-              {saving ? 'Saving...' : mode === 'add' ? 'Save Patient' : 'Update Patient'}
+            {saving ? 'Saving...' : mode === 'add' ? 'Save Patient' : 'Update Patient'}
           </Button>
         </Box>
-        )}
-        {(success || localSuccess) && <Alert severity="success" sx={{ mt: 2 }}>{success || localSuccess}</Alert>}
-        {(error || localError) && <Alert severity="error" sx={{ mt: 2 }}>{error || localError}</Alert>}
-      </Paper>
+      )}
+      
+      {/* Success/Error Messages */}
+      {(success || localSuccess) && <Alert severity="success" sx={{ mt: 2 }}>{success || localSuccess}</Alert>}
+      {(error || localError) && <Alert severity="error" sx={{ mt: 2 }}>{error || localError}</Alert>}
     </Box>
   );
 });

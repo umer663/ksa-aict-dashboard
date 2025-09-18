@@ -59,7 +59,7 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   // Get app config from context
   const appConfig = useAppConfig();
   const allPages = appConfig?.pages || [];
-  const rolePermissions = appConfig?.rolePermissions || {};
+  const rolePermissions = appConfig?.rolePermissions || [];
   const nonRemoveableUsers = appConfig?.nonRemoveableUsers || [];
   const defaultPermissions = appConfig?.defaultPermissions || [];
 
@@ -251,8 +251,11 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
   }
 
   return (
-    <Box sx={{ maxWidth: 900, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>User Management</Typography>
+    <Box sx={{ maxWidth: 1200, margin: '0 auto', padding: 3 }}>
+      <Typography variant="h4" gutterBottom sx={{ mb: 4, color: 'primary.main', fontWeight: 500 }}>
+        User Management
+      </Typography>
+
       {canCreate && (
         <Paper sx={{ p: { xs: 2, sm: 4 }, mb: 4 }}>
           <Typography variant="h6" gutterBottom>Create New User</Typography>
