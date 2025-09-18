@@ -452,6 +452,26 @@ const UserManagement = ({ currentUser }: { currentUser: User }) => {
               margin="normal"
               required
             />
+            {/* Role field - only visible to Super Admin */}
+            {currentUser.role === 'SuperAdmin' && (
+              <TextField
+                label="Role"
+                name="role"
+                value={editForm.role}
+                onChange={handleEditChange}
+                fullWidth
+                margin="normal"
+                required
+                select
+                disabled={editUser?.email === currentUser.email} // Prevent Super Admin from changing their own role
+              >
+                {USER_ROLES.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
             <FormControlLabel
               control={
                 <Switch
