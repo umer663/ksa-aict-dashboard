@@ -20,6 +20,7 @@ import UserManagement from './pages/user-management';
 import BugFeature from './pages/bug-feature';
 import Tutorials from './pages/tutorials';
 import Register from './pages/register/Register';
+import HumanBody from './pages/human-body';
 
 const AppRoutes = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -69,6 +70,7 @@ const AppRoutes = () => {
             )}
             {(nonRemoveableUsers.includes(user.email) || user.permissions?.['bug-feature' as string]?.view === true) && <Route path="/bug-feature" element={<BugFeature user={user} />} />}
             {(nonRemoveableUsers.includes(user.email) || user.permissions?.['tutorials' as string]?.view === true) && <Route path="/tutorials" element={<Tutorials />} />}
+            {(nonRemoveableUsers.includes(user.email) || user.permissions?.['human-body' as string]?.view === true) && <Route path="/human-body" element={<HumanBody />} />}
             <Route path="*" element={<Navigate to={`/${(nonRemoveableUsers.includes(user.email) ? pages[0]?.key : Object.keys(user.permissions || {}).find(key => user.permissions?.[key as string]?.view))}`} replace />} />
           </Route>
         ) : (

@@ -145,4 +145,33 @@ export interface SnackbarState {
   open: boolean;
   message: string;
   severity: 'success' | 'error';
-} 
+}
+
+// Human Body collection types
+export interface HumanBodyMedicine {
+  options: string[];
+  note: string;
+}
+
+export interface HumanBodyEntry {
+  id?: string; // Firestore doc id
+  name: string;
+  system: string;
+  description: string;
+  symptoms: string[];
+  medicine: HumanBodyMedicine[];
+}
+
+export interface HumanBodyMedicineOption {
+  options: string[];
+  note: string;
+}
+
+export interface HumanBodyRecord {
+  id?: string; // Firestore document id
+  name: string;
+  system: string;
+  description: string;
+  symptoms: string[];
+  medicine: HumanBodyMedicineOption[];
+}

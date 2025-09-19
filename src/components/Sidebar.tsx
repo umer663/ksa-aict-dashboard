@@ -68,6 +68,7 @@ const iconMap: Record<string, ReactElement> = {
   contact: <ContactMail />,
   tutorials: <MenuBook />,
   'user-management': <AccountCircle />,
+  'human-body': <MedicalInformation />,
 };
 
 interface SidebarProps {
